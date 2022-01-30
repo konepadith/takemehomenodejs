@@ -54,6 +54,7 @@ app.get('/' , (req,res)=>{
 // donate gateway
 app.post('/donate',async (req,res,next)=>{
     try {
+        
         console.log(req.body)
         const {email , name, amount,token } = req.body
         const customer = await omise.customers.create({
@@ -122,7 +123,7 @@ app.post("/add_user_data", upload.single('image'),(req,res)=>{
         dbCon.query('SELECT user_email from tb_users where user_email = ?',user_email,(error,result,fields)=>{
             if(error) throw error;
             let message=""
-            if (result.lenght === 0) {
+            if (result.length === 0) {
 
                 dbCon.query('INSERT INTO tb_users (user_name, user_surname, user_gender, user_password, user_img, user_email, user_dob, user_village, user_district, user_province, user_workplace, user_phoneNumber) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',[user_name,user_surname,user_gender,crypto.createHash('md5').update(user_password).digest('hex'),"http://localhost:3000/present/"+user_img,user_email,user_dob,user_village,user_district,user_province,user_workplace,user_phoneNumber],(error, results,fields)=>{
             if(error) throw error;
@@ -142,11 +143,32 @@ app.post("/add_user_data", upload.single('image'),(req,res)=>{
     }
 })
 
+//log in
+app.post('/login',  (req,res)=>{
+    const {user_email, user_password} =req.body
+
+    if (!user_email || !user_password) {
+        
+        return res.send({status: 0 })
+    }else{
+        dbCon.query("SELECT * FROM tb_users WHERE user_email = ? AND user_password = ?",[user_email,crypto.createHash('md5').update(user_password).digest('hex')],async(error,results,fields)=>{
+            if(error) throw error;
+            let message = ""
+            if (results.length > 0) {
+                
+                message = "Log in Success"
+                return res.send({error:false, message:message,data:results, status: 1 })
+            }else{
+                message = "Log in fail"
+                return res.send({error:true, message:message,data:results, status: 0 })
+
+            }
+        })
+    }
+})
+
 // represent Dogs data
 app.get('/dogs_data',(req,res)=>{
-
-
-
     dbCon.query('SELECT * ,timestampdiff(year,dog_dob,CURRENT_DATE) as age FROM tb_dogs',(error, results,fields)=>{
         if(error) throw error;
         let message = ""
