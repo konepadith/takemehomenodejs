@@ -94,12 +94,16 @@ app.post('/mailing',(req,res)=>{
         text:text
     }
     transporter.sendMail(mailOption,function(error,info){
-        if (error) {
-            console.log(error)
-            return res.send({error:true,status:0,msg:'fail'})
-        } else {
-            console.log('Email sent:'+info.response)
-            return res.send({error:false,data:info.response,status:1,msg:'succesfull'})
+        try {
+            if (error) {
+                console.log(error)
+                return res.send({error:true,status:0,msg:'fail'})
+            } else {
+                console.log('Email sent:'+info.response)
+                return res.send({error:false,data:info.response,status:1,msg:'succesfull'})
+            }
+        } catch (error) {
+            
         }
     })
     
@@ -114,8 +118,12 @@ app.post('/receive',(req,res)=>{
         return res.status(400).send({error : true,message:"there null field"})
     } else {
         dbCon.query('INSERT INTO tb_receivemail(receivemail_name, receivemail_surname, receivemail_email,receivemail_phone,receivemail_call,receivemail_topic,receivemail_msg) VALUES(?,?,?,?,?,?,?)',[mail_name,mail_surname,mail_email,mail_phone,mail_call,mail_topic,mail_msg],(error,results,fields)=>{
-            if(error) throw error;
+            try {
+                if(error) throw error;
             return res.send({error:false,data:results,message:"success",status: 1})
+            } catch (error) {
+                
+            }
         })
     }
 })
@@ -127,21 +135,43 @@ app.post('/add_events',(req,res)=>{
         return res.status(400).send({error : true,message:"there null field"})
     } else {
         dbCon.query('INSERT INTO tb_events(event_topic, event_date, event_start,event_end,event_place,event_direction,event_status) VALUES(?,?,?,?,?,?,?)',[event_topic,event_date, 'From '+event_start, 'To '+event_end, event_place, event_direction, 1],(error,results,fields)=>{
-            if(error) throw error;
+            try {
+                if(error) throw error;
             return res.send({error:false,data:results,message:"success",status: 1})
+            } catch (error) {
+                
+            }
         })
     }
 })
 
 //represent Events
-app.get('/events_data')
+app.get('/events_data',(req,res)=>{
+    dbCon.query('SELECT * FROM tb_events where event_status = 1',(error, results,fields)=>{
+        try {
+            if(error) throw error;
+        let message = ""
+		let status 
+		if(results === undefined || results.lenght == 0){
+			message ="Book table is empty"
+			status=0
+		}else {
+			message ="Succesfully retrieved all books"
+			status=1
+		}
+		return res.send({ error : false , data: results, message:message, status:status });
+        } catch (error) {
+            
+        }
+    })
+})
 
 // donate gateway
 app.post('/donate',async (req,res,next)=>{
     try {
         
-        console.log(req.body)
-        const {email , name, amount,token } = req.body
+        // console.log(req.body)
+        const {email , name, amount,token,user_id } = req.body
         const customer = await omise.customers.create({
             'email':       email,
             'description': name,
@@ -152,10 +182,13 @@ app.post('/donate',async (req,res,next)=>{
             'currency': 'thb',
             'customer': customer.id,
           });
-        console.log('charge-->',charge)
+        // console.log('charge-->',charge.transaction)
+        dbCon.query('INSERT INTO tb_donate(user_id,donate_bill,donate_price) VALUES(?,?,?)',[user_id,charge.transaction,amount]),(error, results,fields)=>{
+            if(error) throw error;
+        }
         return res.send({ error : false , data: charge, message:'Succesfully',status:1 });
     } catch (error) {
-        console.log(error)
+        // console.log(error)
         return res.send({ error : true , message:'Fail',status:0 });
     }
 
@@ -171,8 +204,12 @@ app.post("/add_dog_data", upload.single('image'),(req,res)=>{
         return res.status(400).send({error : true,message:"there null field"})
     } else {
         dbCon.query('INSERT INTO tb_dogs (dog_name, dog_dob, dog_gender, dog_species, dog_img) VALUES(?,?,?,?,?)',[dog_name,dog_dob,dog_gender,dog_species,"http://localhost:3000/present/"+dog_img],(error, results,fields)=>{
-            if(error) throw error;
+            try {
+                if(error) throw error;
             return res.send({error:false,data:results,message:"success"})
+            } catch (error) {
+                
+            }
         })
     }
 })
@@ -193,8 +230,12 @@ app.post("/add_dog_data_array", upload.array('images',5),(req,res)=>{
         return res.status(400).send({error : true,message:"there null field"})
     } else {
         dbCon.query('INSERT INTO tb_dogs (dog_name, dog_dob, dog_gender, dog_species, dog_img, dog_img2,dog_img3,dog_img4,dog_img5) VALUES(?,?,?,?,?,?,?,?,?)',[dog_name,dog_dob,dog_gender,dog_species,"http://localhost:3000/present/"+dog_img,"http://localhost:3000/present/"+dog_img2,"http://localhost:3000/present/"+dog_img3,"http://localhost:3000/present/"+dog_img4,"http://localhost:3000/present/"+dog_img5],(error, results,fields)=>{
-            if(error) throw error;
+            try {
+                if(error) throw error;
             return res.send({error:false,data:results,message:"success"})
+            } catch (error) {
+                
+            }
         })
     }
 })
@@ -211,19 +252,27 @@ app.post("/add_user_data", upload.single('image'),(req,res)=>{
     }else{
 
         dbCon.query('SELECT user_email from tb_users where user_email = ?',user_email,(error,result,fields)=>{
-            if(error) throw error;
+            try {
+                if(error) throw error;
             let message=""
-            if (result.length === 0) {
+                    if (result.length === 0) {
 
-                dbCon.query('INSERT INTO tb_users (user_name, user_surname, user_gender, user_password, user_img, user_email, user_dob, user_village, user_district, user_province, user_workplace, user_phoneNumber) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',[user_name,user_surname,user_gender,crypto.createHash('md5').update(user_password).digest('hex'),"http://localhost:3000/present/"+user_img,user_email,user_dob,user_village,user_district,user_province,user_workplace,user_phoneNumber],(error, results,fields)=>{
-            if(error) throw error;
-            message = "sign up successful"
-            return res.send({error:false,data:results,message:"success",status: 1})
-            })   
-            } else {
-                message = "this email is already exist";
-                return res.send({error : true, data: result, message:message, status:0})
-               
+                        dbCon.query('INSERT INTO tb_users (user_name, user_surname, user_gender, user_password, user_img, user_email, user_dob, user_village, user_district, user_province, user_workplace, user_phoneNumber) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',[user_name,user_surname,user_gender,crypto.createHash('md5').update(user_password).digest('hex'),"http://localhost:3000/present/"+user_img,user_email,user_dob,user_village,user_district,user_province,user_workplace,user_phoneNumber],(error, results,fields)=>{
+                    try {
+                        if(error) throw error;
+                    message = "sign up successful"
+                    return res.send({error:false,data:results,message:"success",status: 1})
+                    } catch (error) {
+                        
+                    }
+                    })   
+                    } else {
+                        message = "this email is already exist";
+                        return res.send({error : true, data: result, message:message, status:0})
+                    
+                    }
+            } catch (error) {
+                
             }
         })
 
@@ -242,7 +291,8 @@ app.post('/login',  (req,res)=>{
         return res.send({status: 0 })
     }else{
         dbCon.query("SELECT * FROM tb_users WHERE user_email = ? AND user_password = ?",[user_email,crypto.createHash('md5').update(user_password).digest('hex')],(error,results,fields)=>{
-            if(error) throw error;
+            try {
+                if(error) throw error;
             let message = ""
             if (results.length > 0) {
                 
@@ -252,6 +302,9 @@ app.post('/login',  (req,res)=>{
                 message = "Log in fail"
                 return res.send({error:true, message:message,data:results, status: 0 })
 
+            }
+            } catch (error) {
+                
             }
         })
     }
@@ -269,10 +322,14 @@ app.post('/required',  (req,res)=>{
         return res.send({status: 0 })
     }else{
         dbCon.query("INSERT INTO tb_form_adopt (user_id,dog_id,q_1,q_2,q_3,q_4,q_5,q_6,q_7,q_8,q_9,q_10,q_11,q_12,q_13,q_14,q_15,q_16,q_17,q_18,q_19) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",[user_id,dog_id,q_1,q_2,q_3,q_4,q_5,q_6,q_7,q_8,q_9,q_10,q_11,q_12,q_13,q_14,q_15,q_16,q_17,q_18,q_19],(error,results,fields)=>{
-            if(error) throw error;
+            try {
+                if(error) throw error;
             let message = ""
             message = "sign up successful"
             return res.send({error:false,data:results,message:"success",status: 1})
+            } catch (error) {
+                
+            }
         })
     }
 })
@@ -280,7 +337,8 @@ app.post('/required',  (req,res)=>{
 // represent Dogs data
 app.get('/dogs_data',(req,res)=>{
     dbCon.query('SELECT * ,timestampdiff(year,dog_dob,CURRENT_DATE) as age FROM tb_dogs where dog_status = 0',(error, results,fields)=>{
-        if(error) throw error;
+        try {
+            if(error) throw error;
         let message = ""
 		let status 
 		if(results === undefined || results.lenght == 0){
@@ -291,6 +349,9 @@ app.get('/dogs_data',(req,res)=>{
 			status=1
 		}
 		return res.send({ error : false , data: results, message:message, status:status });
+        } catch (error) {
+            
+        }
     })
 
 });
@@ -298,7 +359,8 @@ app.get('/dogs_data',(req,res)=>{
 //represent Address Village District Province
 app.get('/village',(req,res)=>{
     dbCon.query('SELECT * FROM tb_village',(error, results,fields)=>{
-        if(error) throw error;
+        try {
+            if(error) throw error;
         let message = ""
 		let status 
 		if(results === undefined || results.lenght == 0){
@@ -309,12 +371,16 @@ app.get('/village',(req,res)=>{
 			status=1
 		}
 		return res.send({ error : false , data: results, message:message, status:status });
+        } catch (error) {
+            
+        }
     })
 
 });
 app.get('/district',(req,res)=>{
     dbCon.query('SELECT * FROM tb_district',(error, results,fields)=>{
-        if(error) throw error;
+        try {
+            if(error) throw error;
         let message = ""
 		let status 
 		if(results === undefined || results.lenght == 0){
@@ -325,12 +391,16 @@ app.get('/district',(req,res)=>{
 			status=1
 		}
 		return res.send({ error : false , data: results, message:message, status:status });
+        } catch (error) {
+            
+        }
     })
 
 });
 app.get('/province',(req,res)=>{
     dbCon.query('SELECT * FROM tb_province',(error, results,fields)=>{
-        if(error) throw error;
+        try {
+            if(error) throw error;
         let message = ""
 		let status 
 		if(results === undefined || results.lenght == 0){
@@ -341,6 +411,9 @@ app.get('/province',(req,res)=>{
 			status=1
 		}
 		return res.send({ error : false , data: results, message:message, status:status });
+        } catch (error) {
+            
+        }
     })
 
 });
@@ -349,7 +422,9 @@ app.get('/data_dog_id',(req,res)=>{
     let id = req.query.id
     // console.log(id)
     dbCon.query('SELECT * FROM tb_dogs where dog_id='+id,(error, results,fields)=>{
-        if(error) throw error;
+
+        try {
+            if(error) throw error;
         let message = ""
 		let status 
 		if(results === undefined || results.lenght == 0){
@@ -360,6 +435,11 @@ app.get('/data_dog_id',(req,res)=>{
 			status=1
 		}
 		return res.send({ error : false , data: results, message:message, status:status });
+        } catch (error) {
+            
+        }
+
+        
     })
 
 });
