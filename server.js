@@ -96,10 +96,10 @@ app.post('/mailing',(req,res)=>{
     transporter.sendMail(mailOption,function(error,info){
         try {
             if (error) {
-                console.log(error)
+                // console.log(error)
                 return res.send({error:true,status:0,msg:'fail'})
             } else {
-                console.log('Email sent:'+info.response)
+                // console.log('Email sent:'+info.response)
                 return res.send({error:false,data:info.response,status:1,msg:'succesfull'})
             }
         } catch (error) {
@@ -127,7 +127,41 @@ app.post('/receive',(req,res)=>{
         })
     }
 })
+//represent Email
+app.get('/show_mail',(req,res)=>{
+    dbCon.query('SELECT * FROM tb_receivemail  ORDER BY receivemail_create_at DESC',(error, results,fields)=>{
+        try {
+            if(error) throw error;
+        let message = ""
+		let status 
+		if(results === undefined || results.length == 0){
+			message ="Book table is empty"
+			status=0
+		}else {
+			message ="Succesfully retrieved all books"
+			status=1
+		}
+		return res.send({ error : false , data: results, message:message, status:status });
+        } catch (error) {
+            
+        }
+    })
+})
 
+//Readed mail
+app.get('/read_mail',(req,res)=>{
+    let receivemail_id = req.query.receivemail_id
+    dbCon.query('UPDATE tb_receivemail SET receivemail_status = 1 WHERE tb_receivemail.receivemail_id ='+receivemail_id,(error,results,fields)=>{
+
+        try {
+            if(error) throw error;
+            return res.send({error:false,data:results,message:"success",status: 1})
+        } catch (error) {
+            
+        }
+    })
+    
+})
 //event&news add
 app.post('/add_events',(req,res)=>{
     const{event_topic,event_date, event_start, event_end, event_place, event_direction}=req.body
@@ -152,7 +186,7 @@ app.get('/events_data',(req,res)=>{
             if(error) throw error;
         let message = ""
 		let status 
-		if(results === undefined || results.lenght == 0){
+		if(results === undefined || results.length == 0){
 			message ="Book table is empty"
 			status=0
 		}else {
@@ -223,21 +257,19 @@ app.post("/add_dog_data_array", upload.array('images',5),(req,res)=>{
     let dog_img3=req.files[2].filename
     let dog_img4=req.files[3].filename
     let dog_img5=req.files[4].filename
-    console.log(req.files[1].filename)
-    // res.send("multi appry")
-    // console.log(req.body,req.file.filename)
-    if (!dog_name || !dog_dob || !dog_gender || !dog_species || !dog_img) {
-        return res.status(400).send({error : true,message:"there null field"})
-    } else {
-        dbCon.query('INSERT INTO tb_dogs (dog_name, dog_dob, dog_gender, dog_species, dog_img, dog_img2,dog_img3,dog_img4,dog_img5) VALUES(?,?,?,?,?,?,?,?,?)',[dog_name,dog_dob,dog_gender,dog_species,"http://localhost:3000/present/"+dog_img,"http://localhost:3000/present/"+dog_img2,"http://localhost:3000/present/"+dog_img3,"http://localhost:3000/present/"+dog_img4,"http://localhost:3000/present/"+dog_img5],(error, results,fields)=>{
-            try {
-                if(error) throw error;
-            return res.send({error:false,data:results,message:"success"})
-            } catch (error) {
+    console.log(req.body,req.files.filename)
+    // if (!dog_name || !dog_dob || !dog_gender || !dog_species || !dog_img) {
+    //     return res.status(400).send({error : true,message:"there null field"})
+    // } else {
+    //     dbCon.query('INSERT INTO tb_dogs (dog_name, dog_dob, dog_gender, dog_species, dog_img, dog_img2,dog_img3,dog_img4,dog_img5) VALUES(?,?,?,?,?,?,?,?,?)',[dog_name,dog_dob,dog_gender,dog_species,"http://localhost:3000/present/"+dog_img,"http://localhost:3000/present/"+dog_img2,"http://localhost:3000/present/"+dog_img3,"http://localhost:3000/present/"+dog_img4,"http://localhost:3000/present/"+dog_img5],(error, results,fields)=>{
+    //         try {
+    //             if(error) throw error;
+    //         return res.send({error:false,data:results,message:"success"})
+    //         } catch (error) {
                 
-            }
-        })
-    }
+    //         }
+    //     })
+    // }
 })
 
 // register
@@ -254,7 +286,7 @@ app.post("/add_user_data", upload.single('image'),(req,res)=>{
         dbCon.query('SELECT user_email from tb_users where user_email = ?',user_email,(error,result,fields)=>{
             try {
                 if(error) throw error;
-            let message=""
+                let message=""
                     if (result.length === 0) {
 
                         dbCon.query('INSERT INTO tb_users (user_name, user_surname, user_gender, user_password, user_img, user_email, user_dob, user_village, user_district, user_province, user_workplace, user_phoneNumber) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',[user_name,user_surname,user_gender,crypto.createHash('md5').update(user_password).digest('hex'),"http://localhost:3000/present/"+user_img,user_email,user_dob,user_village,user_district,user_province,user_workplace,user_phoneNumber],(error, results,fields)=>{
@@ -310,7 +342,7 @@ app.post('/login',  (req,res)=>{
     }
 })
 
-//requireddorm
+//requiredform
 app.post('/required',  (req,res)=>{
     const {user_id,dog_id,q_1,q_2,q_3,q_4,q_5,q_6,q_7,q_8,q_9,q_10,q_11,q_12,q_13,q_14,q_15,q_16,q_17,q_18,q_19} =req.body
     console.log(req.body)
@@ -341,7 +373,7 @@ app.get('/dogs_data',(req,res)=>{
             if(error) throw error;
         let message = ""
 		let status 
-		if(results === undefined || results.lenght == 0){
+		if(results === undefined || results.length == 0){
 			message ="Book table is empty"
 			status=0
 		}else {
@@ -363,7 +395,7 @@ app.get('/village',(req,res)=>{
             if(error) throw error;
         let message = ""
 		let status 
-		if(results === undefined || results.lenght == 0){
+		if(results === undefined || results.length == 0){
 			message ="Book table is empty"
 			status=0
 		}else {
@@ -383,7 +415,7 @@ app.get('/district',(req,res)=>{
             if(error) throw error;
         let message = ""
 		let status 
-		if(results === undefined || results.lenght == 0){
+		if(results === undefined || results.length == 0){
 			message ="Book table is empty"
 			status=0
 		}else {
@@ -403,7 +435,7 @@ app.get('/province',(req,res)=>{
             if(error) throw error;
         let message = ""
 		let status 
-		if(results === undefined || results.lenght == 0){
+		if(results === undefined || results.length == 0){
 			message ="Book table is empty"
 			status=0
 		}else {
@@ -417,7 +449,7 @@ app.get('/province',(req,res)=>{
     })
 
 });
-
+//dog data by id
 app.get('/data_dog_id',(req,res)=>{
     let id = req.query.id
     // console.log(id)
@@ -427,7 +459,33 @@ app.get('/data_dog_id',(req,res)=>{
             if(error) throw error;
         let message = ""
 		let status 
-		if(results === undefined || results.lenght == 0){
+		if(results === undefined || results.length == 0){
+			message ="Book table is empty"
+			status=0
+		}else {
+			message ="Succesfully retrieved all books"
+			status=1
+		}
+		return res.send({ error : false , data: results, message:message, status:status });
+        } catch (error) {
+            
+        }
+
+        
+    })
+
+});
+//show donate
+app.get('/data_donate',(req,res)=>{
+    let id = req.query.id
+    // console.log(id)
+    dbCon.query('SELECT * FROM tb_donate where user_id= ? ORDER BY donate_create_at DESC',id,(error, results,fields)=>{
+
+        try {
+            if(error) throw error;
+        let message = ""
+		let status 
+		if(results === undefined || results.length == 0){
 			message ="Book table is empty"
 			status=0
 		}else {
@@ -444,6 +502,46 @@ app.get('/data_dog_id',(req,res)=>{
 
 });
 
+//update user
+app.post('/update_user',(req,res)=>{
+    const{user_name,user_surname,user_gender,user_dob,user_village,user_district,user_province,user_workplace,user_phoneNumber,user_id}=req.body
+    if (!user_name || !user_surname || !user_gender || !user_dob || !user_village || !user_district || !user_province || !user_workplace || !user_phoneNumber || !user_id) {
+        return res.send({status: 2,message:'somefill empty' })
+    } else {
+        
+        dbCon.query('UPDATE tb_users SET user_name = ?,user_surname = ?,user_gender = ?,user_dob = ?,user_village = ?,user_district = ?,user_province = ?,user_workplace = ?,user_phoneNumber = ? WHERE user_id=?',[user_name,user_surname,user_gender,user_dob,user_village,user_district,user_province,user_workplace,user_phoneNumber,user_id],(error,results,fields)=>{
+            try {   
+                if(error) throw error;
+                    message="update success"
+                    return res.send({error:false, data:results,status:1,message:message})
+                } catch (error) {
+                            
+            }
+        })
+    }
+})
+
+//show form request by user id
+app.get('/show_form_uid',(req,res)=>{
+    let id= req.query.id
+    dbCon.query('SELECT f.form_id,f.user_id,f.dog_id, d.dog_name,f.form_status,f.form_create_at FROM tb_form_adopt as f INNER JOIN tb_users as u ON f.user_id=u.user_id INNER JOIN tb_dogs as d ON f.dog_id=d.dog_id WHERE f.user_id =? ORDER BY f.form_create_at DESC',id,(error,results,fields)=>{
+        try {
+            if(error) throw error;
+        let message = ""
+		let status 
+		if(results === undefined || results.length == 0){
+			message ="Book table is empty"
+			status=0
+		}else {
+			message ="Succesfully retrieved all books"
+			status=1
+		}
+		return res.send({ error : false , data: results, message:message, status:status });
+        } catch (error) {
+            
+        }
+    })
+})
 
 // create path Image represent
 app.use('/present', express.static('./images'));
