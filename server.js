@@ -96,7 +96,7 @@ app.post('/mailing',(req,res)=>{
     transporter.sendMail(mailOption,function(error,info){
         try {
             if (error) {
-                // console.log(error)
+                console.log(error)
                 return res.send({error:true,status:0,msg:'fail'})
             } else {
                 // console.log('Email sent:'+info.response)
@@ -233,7 +233,7 @@ app.post("/add_dog_data", upload.single('image'),(req,res)=>{
 
     const {dog_name,dog_dob,dog_gender,dog_species} = req.body
     let dog_img=req.file.filename
-    // console.log(req.body,req.file.filename)
+    console.log(req.body,req.file)
     if (!dog_name || !dog_dob || !dog_gender || !dog_species || !dog_img) {
         return res.status(400).send({error : true,message:"there null field"})
     } else {
@@ -249,7 +249,7 @@ app.post("/add_dog_data", upload.single('image'),(req,res)=>{
 })
 
 // add dog Data array
-app.post("/add_dog_data_array", upload.array('images',5),(req,res)=>{
+app.post("/add_dog_data_array", upload.array('images'),(req,res)=>{
 
     const {dog_name,dog_dob,dog_gender,dog_species} = req.body
     let dog_img=req.files[0].filename
@@ -257,19 +257,37 @@ app.post("/add_dog_data_array", upload.array('images',5),(req,res)=>{
     let dog_img3=req.files[2].filename
     let dog_img4=req.files[3].filename
     let dog_img5=req.files[4].filename
-    console.log(req.body,req.files.filename)
-    // if (!dog_name || !dog_dob || !dog_gender || !dog_species || !dog_img) {
-    //     return res.status(400).send({error : true,message:"there null field"})
-    // } else {
-    //     dbCon.query('INSERT INTO tb_dogs (dog_name, dog_dob, dog_gender, dog_species, dog_img, dog_img2,dog_img3,dog_img4,dog_img5) VALUES(?,?,?,?,?,?,?,?,?)',[dog_name,dog_dob,dog_gender,dog_species,"http://localhost:3000/present/"+dog_img,"http://localhost:3000/present/"+dog_img2,"http://localhost:3000/present/"+dog_img3,"http://localhost:3000/present/"+dog_img4,"http://localhost:3000/present/"+dog_img5],(error, results,fields)=>{
-    //         try {
-    //             if(error) throw error;
-    //         return res.send({error:false,data:results,message:"success"})
-    //         } catch (error) {
+    // console.log(req.body)
+    // console.log(req.files)
+    if (!dog_name || !dog_dob || !dog_gender || !dog_species || !dog_img) {
+        return res.status(400).send({error : true,message:"there null field",status: 0})
+    } else {
+        dbCon.query('INSERT INTO tb_dogs (dog_name, dog_dob, dog_gender, dog_species, dog_img, dog_img2,dog_img3,dog_img4,dog_img5) VALUES(?,?,?,?,?,?,?,?,?)',[dog_name,dog_dob,dog_gender,dog_species,"http://localhost:3000/present/"+dog_img,"http://localhost:3000/present/"+dog_img2,"http://localhost:3000/present/"+dog_img3,"http://localhost:3000/present/"+dog_img4,"http://localhost:3000/present/"+dog_img5],(error, results,fields)=>{
+            try {
+                if(error) throw error;
+            return res.send({error:false,data:results,message:"success",staus:1})
+            } catch (error) {
                 
-    //         }
-    //     })
-    // }
+            }
+        })
+    }
+})
+// delete dog
+app.post("/delete_dog_data",(req,res)=>{
+    const{dog_id } = req.body
+    if (!dog_id) {
+        return res.status(400).send({error: true, message:"no id", status: 0})
+    } else {
+        dbCon.query('DELETE FROM tb_dogs WHERE tb_dogs.dog_id = ?',[dog_id],(error, results,fields)=>{
+            try {
+                if(error) throw error;
+            return res.send({error:false,data:results,message:"success",staus:1})
+            } catch (error) {
+                
+            }
+        })
+        
+    }
 })
 
 // register
@@ -387,6 +405,26 @@ app.get('/dogs_data',(req,res)=>{
     })
 
 });
+
+// update dog
+app.post('/update_dogs',(req,res)=>{
+    const {dog_id,dog_name,dog_dob,dog_gender,dog_species} = req.body
+    if ( !dog_name || !dog_dob || !dog_gender || !dog_species || !dog_id  ) {
+        console.log(req.body)
+        return res.send({status: 2,message:'somefill empty' })
+    } else {
+        
+        dbCon.query('UPDATE tb_dogs SET dog_name = ?,dog_dob = ?,dog_gender = ?,dog_species = ? WHERE dog_id=?',[dog_name,dog_dob,dog_gender,dog_species,dog_id],(error,results,fields)=>{
+            try {   
+                if(error) throw error;
+                    message="update success"
+                    return res.send({error:false, data:results,status:1,message:message})
+                } catch (error) {
+                            
+            }
+        })
+    }
+})
 
 //represent Address Village District Province
 app.get('/village',(req,res)=>{
