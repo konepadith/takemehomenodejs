@@ -383,6 +383,26 @@ app.post('/required',  (req,res)=>{
         })
     }
 })
+//show requiredform
+app.get('/form_show',(req,res)=>{
+    dbCon.query('SELECT f.*,u.user_name, d.dog_name FROM tb_form_adopt f INNER JOIN tb_users u ON f.user_id=u.user_id INNER JOIN tb_dogs d ON f.dog_id = d.dog_id',(error, results,fields)=>{
+        try {
+            if(error) throw error;
+        let message = ""
+		let status 
+		if(results === undefined || results.length == 0){
+			message ="Book table is empty"
+			status=0
+		}else {
+			message ="Succesfully retrieved all books"
+			status=1
+		}
+		return res.send({ error : false , data: results, message:message, status:status });
+        } catch (error) {
+            
+        }
+    })
+})
 
 // represent Dogs data
 app.get('/dogs_data',(req,res)=>{
@@ -413,7 +433,7 @@ app.post('/update_dogs',(req,res)=>{
         console.log(req.body)
         return res.send({status: 2,message:'somefill empty' })
     } else {
-        
+        console.log(req.body)
         dbCon.query('UPDATE tb_dogs SET dog_name = ?,dog_dob = ?,dog_gender = ?,dog_species = ? WHERE dog_id=?',[dog_name,dog_dob,dog_gender,dog_species,dog_id],(error,results,fields)=>{
             try {   
                 if(error) throw error;
