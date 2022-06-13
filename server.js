@@ -38,7 +38,7 @@ const upload = multer({storage :fileStorageEngine})
 //     service:'gmail',
 //     auth:{
 //         user:'takeme.home.lao@gmail.com',
-//         pass:'Takeme.homerdsjklutiro134533'
+//         pass:'qvocpnlivsixerzf'
 //     }
 // })
 // const mailOption = {
@@ -84,7 +84,7 @@ app.post('/mailing',(req,res)=>{
         service:'gmail',
         auth:{
             user:'takeme.home.lao@gmail.com',
-            pass:'Takeme.homerdsjklutiro134533'
+            pass:'qvocpnlivsixerzf'
         }
     })
     const mailOption = {
@@ -385,7 +385,7 @@ app.post('/required',  (req,res)=>{
 })
 //show requiredform
 app.get('/form_show',(req,res)=>{
-    dbCon.query('SELECT f.*,u.user_name, d.dog_name FROM tb_form_adopt f INNER JOIN tb_users u ON f.user_id=u.user_id INNER JOIN tb_dogs d ON f.dog_id = d.dog_id',(error, results,fields)=>{
+    dbCon.query('SELECT f.*,u.user_name, d.dog_name,u.user_email FROM tb_form_adopt f INNER JOIN tb_users u ON f.user_id=u.user_id INNER JOIN tb_dogs d ON f.dog_id = d.dog_id',(error, results,fields)=>{
         try {
             if(error) throw error;
         let message = ""
@@ -402,6 +402,122 @@ app.get('/form_show',(req,res)=>{
             
         }
     })
+})
+app.post('/divided_form',(req,res)=>{
+    const{user_email,form_id,dog_id,form_status}=req.body
+    console.log(req.body)
+    if (form_status==1) {
+        
+        dbCon.query('UPDATE tb_form_adopt SET form_status = ? WHERE form_id=?',[form_status,form_id],(error,results,fields)=>{
+            try {   
+                if(error) throw error;
+                    message="update success"
+                 res.send({error:false, data:results,status:1,message:message})
+                } catch (error) {
+                            
+            }
+        })
+        
+        const transporter = nodemailer.createTransport({
+            service:'gmail',
+            auth:{
+                user:'takeme.home.lao@gmail.com',
+                pass:'qvocpnlivsixerzf'
+            }
+        })
+        const mailOption = {
+            from: 'takeme.home.lao@gmail.com',
+            to:user_email,
+            subject:'Your form is accepted this is Your dog you would like to adopt',
+            text:'gooo'
+        }
+        transporter.sendMail(mailOption,function(error,info){
+            try {
+                if (error) {
+                    console.log(error)
+                    return res.send({error:true,status:0,msg:'fail'})
+                } else {
+                    // console.log('Email sent:'+info.response)
+                    return res.send({error:false,data:info.response,status:1,msg:'succesfull'})
+                }
+            } catch (error) {
+                
+            }
+        })
+    } else if(form_status==2){
+        dbCon.query('UPDATE tb_form_adopt SET form_status = ? WHERE form_id=?',[form_status,form_id],(error,results,fields)=>{
+            try {   
+                if(error) throw error;
+                    message="update success"
+                     res.send({error:false, data:results,status:1,message:message})
+                } catch (error) {
+                            
+            }
+        })
+        const transporter = nodemailer.createTransport({
+            service:'gmail',
+            auth:{
+                user:'takeme.home.lao@gmail.com',
+                pass:'qvocpnlivsixerzf'
+            }
+        })
+        const mailOption = {
+            from: 'takeme.home.lao@gmail.com',
+            to:user_email,
+            subject:'Your form is decline this is Your dog you would like to adopt',
+            text:'gooo'
+        }
+        transporter.sendMail(mailOption,function(error,info){
+            try {
+                if (error) {
+                    console.log(error)
+                    return res.send({error:true,status:0,msg:'fail'})
+                } else {
+                    // console.log('Email sent:'+info.response)
+                    return res.send({error:false,data:info.response,status:1,msg:'succesfull'})
+                }
+            } catch (error) {
+                
+            }
+        })
+    }else if (form_status==3) {
+        dbCon.query('UPDATE tb_form_adopt SET form_status = ? WHERE form_id=?',[form_status,form_id],(error,results,fields)=>{
+            try {   
+                if(error) throw error;
+                    message="update success"
+                    res.send({error:false, data:results,status:1,message:message})
+                } catch (error) {
+                            
+            }
+        })
+        const transporter = nodemailer.createTransport({
+            service:'gmail',
+            auth:{
+                user:'takeme.home.lao@gmail.com',
+                pass:'qvocpnlivsixerzf'
+            }
+        })
+        const mailOption = {
+            from: 'takeme.home.lao@gmail.com',
+            to:user_email,
+            subject:'Your purchase has been successful',
+            text:'Thank you for your kindly'
+        }
+        transporter.sendMail(mailOption,function(error,info){
+            try {
+                if (error) {
+                    console.log(error)
+                    return res.send({error:true,status:0,msg:'fail'})
+                } else {
+                    // console.log('Email sent:'+info.response)
+                    return res.send({error:false,data:info.response,status:1,msg:'succesfull'})
+                }
+            } catch (error) {
+                
+            }
+        })
+    }
+   
 })
 
 // represent Dogs data
