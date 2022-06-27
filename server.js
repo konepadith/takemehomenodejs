@@ -42,7 +42,7 @@ const upload = multer({storage :fileStorageEngine})
 //     }
 // })
 // const mailOption = {
-//     from: 'takeme.home.lao@gmail.com',
+//     from: 'takeme.home.lao@gmail.com',Takeme.homerdsjklutiro134533
 //     to:'konepadithspydee@gmail.com',
 //     subject:'Sending Email using Nodejs',
 //     text:"Hi I'm Batman"
@@ -251,7 +251,7 @@ app.post("/add_dog_data", upload.single('image'),(req,res)=>{
 // add dog Data array
 app.post("/add_dog_data_array", upload.array('images'),(req,res)=>{
 
-    const {dog_name,dog_dob,dog_gender,dog_species} = req.body
+    const {dog_name,dog_dob,dog_gender,dog_species,giver_email} = req.body
     let dog_img=req.files[0].filename
     let dog_img2=req.files[1].filename
     let dog_img3=req.files[2].filename
@@ -259,26 +259,61 @@ app.post("/add_dog_data_array", upload.array('images'),(req,res)=>{
     let dog_img5=req.files[4].filename
     // console.log(req.body)
     // console.log(req.files)
-    if (!dog_name || !dog_dob || !dog_gender || !dog_species || !dog_img) {
-        return res.status(400).send({error : true,message:"there null field",status: 0})
+   
+    if (!giver_email) {
+        if (!dog_name || !dog_dob || !dog_gender || !dog_species || !dog_img) {
+            return res.status(400).send({error : true,message:"there null field",status: 0})
+        } else {
+            dbCon.query('INSERT INTO tb_dogs (dog_name, dog_dob, dog_gender, dog_species, dog_img, dog_img2,dog_img3,dog_img4,dog_img5) VALUES(?,?,?,?,?,?,?,?,?)',[dog_name,dog_dob,dog_gender,dog_species,"http://localhost:3000/present/"+dog_img,"http://localhost:3000/present/"+dog_img2,"http://localhost:3000/present/"+dog_img3,"http://localhost:3000/present/"+dog_img4,"http://localhost:3000/present/"+dog_img5],(error, results,fields)=>{
+                try {
+                    if(error) throw error;
+                return res.send({error:false,data:results,message:"success",status:1})
+                } catch (error) {
+                    
+                }
+            })
+        }
+        // return res.send({error:false,data:result,message:"success",staus:1})
     } else {
-        dbCon.query('INSERT INTO tb_dogs (dog_name, dog_dob, dog_gender, dog_species, dog_img, dog_img2,dog_img3,dog_img4,dog_img5) VALUES(?,?,?,?,?,?,?,?,?)',[dog_name,dog_dob,dog_gender,dog_species,"http://localhost:3000/present/"+dog_img,"http://localhost:3000/present/"+dog_img2,"http://localhost:3000/present/"+dog_img3,"http://localhost:3000/present/"+dog_img4,"http://localhost:3000/present/"+dog_img5],(error, results,fields)=>{
-            try {
-                if(error) throw error;
-            return res.send({error:false,data:results,message:"success",staus:1})
-            } catch (error) {
+        if (!dog_name || !dog_dob || !dog_gender || !dog_species || !dog_img ||!giver_email) {
+            return res.status(400).send({error : true,message:"there null field",status: 0})
+        } 
+        else {
+            let giver_id
+            dbCon.query('SELECT giver_id from tb_dog_giver WHERE giver_email = ?',giver_email,(error,result,fields)=>{
                 
-            }
-        })
+                try {
+                    if(error) throw error;
+                    let message=""
+                    if (result.length===1) {
+                        giver_id=result[0].giver_id
+                            dbCon.query('INSERT INTO tb_dogs (dog_name, dog_dob, dog_gender, dog_species, dog_img, dog_img2,dog_img3,dog_img4,dog_img5,giver_id) VALUES(?,?,?,?,?,?,?,?,?,?)',[dog_name,dog_dob,dog_gender,dog_species,"http://localhost:3000/present/"+dog_img,"http://localhost:3000/present/"+dog_img2,"http://localhost:3000/present/"+dog_img3,"http://localhost:3000/present/"+dog_img4,"http://localhost:3000/present/"+dog_img5,giver_id],(error, results,fields)=>{
+                            try {
+                                return res.send({error:false,data:results,message:"succeswwawdas",status: 1})
+                            } catch (error) {
+                                
+                            }
+
+                        })
+                    }else{
+                    return res.send({error:true,data:result,message:"email is not exist",status: 3})
+                    }
+                } catch (error) {
+                    
+                }
+            })
+        }
     }
 })
 // delete dog
-app.post("/delete_dog_data",(req,res)=>{
-    const{dog_id } = req.body
+app.post("/status_dog_data",(req,res)=>{
+    const{dog_id,dog_status } = req.body
+    // console.log(req.body)
+    // return res.send({error: true, message:"no id", status: 0})
     if (!dog_id) {
         return res.status(400).send({error: true, message:"no id", status: 0})
     } else {
-        dbCon.query('DELETE FROM tb_dogs WHERE tb_dogs.dog_id = ?',[dog_id],(error, results,fields)=>{
+        dbCon.query('UPDATE tb_dogs SET dog_status = ? WHERE dog_id=?',[dog_status,dog_id],(error, results,fields)=>{
             try {
                 if(error) throw error;
             return res.send({error:false,data:results,message:"success",staus:1})
@@ -331,6 +366,69 @@ app.post("/add_user_data", upload.single('image'),(req,res)=>{
         
     }
 })
+
+app.post("/giver_register", upload.single('image'),(req,res)=>{
+
+    const{giver_name,giver_surname,giver_gender,giver_email,giver_dob,giver_village,giver_district,giver_province,giver_workplace,giver_phoneNumber}=req.body
+    
+   
+    // console.log(req.body)
+    if (!giver_name || !giver_surname ||!giver_gender || !giver_email || !giver_dob || !giver_village || !giver_district || !giver_province || !giver_workplace || !giver_phoneNumber) {
+        return res.status(400).send({error : true,message:"there null field"})
+    }else{
+
+        dbCon.query('SELECT giver_email from tb_dog_giver where giver_email = ?',giver_email,(error,result,fields)=>{
+            console.log(result)
+            try {
+                let giver_img = req.file.filename
+                if(error) throw error;
+                let message=""
+                    if (result.length === 0) {
+
+                        dbCon.query('INSERT INTO tb_dog_giver (giver_name, giver_surname, giver_gender, giver_img, giver_email, giver_dob, giver_village, giver_district, giver_province, giver_workplace, giver_phoneNumber) VALUES(?,?,?,?,?,?,?,?,?,?,?)',[giver_name,giver_surname,giver_gender,"http://localhost:3000/present/"+giver_img,giver_email,giver_dob,giver_village,giver_district,giver_province,giver_workplace,giver_phoneNumber],(error, results,fields)=>{
+                    try {
+                        if(error) throw error;
+                    message = "sign up successful"
+                    return res.send({error:false,data:results,message:"success",status: 1})
+                    } catch (error) {
+                        
+                    }
+                    })   
+                    } else {
+                        message = "this email is already exist";
+                        return res.send({error : true, data: result, message:message, status:0})
+                    
+                    }
+            } catch (error) {
+                
+            }
+        })
+
+
+
+        
+    }
+})
+app.get('/giver_data',(req,res)=>{
+    dbCon.query('SELECT g.*,v.name_lao AS village,d.name_lao AS district, p.name_lao AS province  from tb_dog_giver g INNER JOIN tb_village v ON g.giver_village = v.id_village INNER JOIN tb_district d ON g.giver_district = d.id_district INNER JOIN tb_province p ON g.giver_province = p.id_province',(error, results,fields)=>{
+        try {
+            if(error) throw error;
+        let message = ""
+		let status 
+		if(results === undefined || results.length == 0){
+			message ="Book table is empty"
+			status=0
+		}else {
+			message ="Succesfully retrieved all books"
+			status=1
+		}
+		return res.send({ error : false , data: results, message:message, status:status });
+        } catch (error) {
+            
+        }
+    })
+
+});
 
 //log in
 app.post('/login',  (req,res)=>{
@@ -405,14 +503,17 @@ app.get('/form_show',(req,res)=>{
 })
 app.post('/divided_form',(req,res)=>{
     const{user_email,form_id,dog_id,form_status}=req.body
-    console.log(req.body)
+    // console.log(req.body)
+    // status= 1 Acecpt
+    // status = 2 Decline
+    // status = 3 Purchase
     if (form_status==1) {
-        
+        console.log("status = 1")
         dbCon.query('UPDATE tb_form_adopt SET form_status = ? WHERE form_id=?',[form_status,form_id],(error,results,fields)=>{
             try {   
                 if(error) throw error;
                     message="update success"
-                 res.send({error:false, data:results,status:1,message:message})
+                //  res.send({error:false, data:results,status:1,message:message})
                 } catch (error) {
                             
             }
@@ -429,7 +530,7 @@ app.post('/divided_form',(req,res)=>{
             from: 'takeme.home.lao@gmail.com',
             to:user_email,
             subject:'Your form is accepted this is Your dog you would like to adopt',
-            text:'gooo'
+            text:'Let take him and purchase for 100 Dollars'
         }
         transporter.sendMail(mailOption,function(error,info){
             try {
@@ -437,7 +538,6 @@ app.post('/divided_form',(req,res)=>{
                     console.log(error)
                     return res.send({error:true,status:0,msg:'fail'})
                 } else {
-                    // console.log('Email sent:'+info.response)
                     return res.send({error:false,data:info.response,status:1,msg:'succesfull'})
                 }
             } catch (error) {
@@ -449,7 +549,7 @@ app.post('/divided_form',(req,res)=>{
             try {   
                 if(error) throw error;
                     message="update success"
-                     res.send({error:false, data:results,status:1,message:message})
+                    //  res.send({error:false, data:results,status:1,message:message})
                 } catch (error) {
                             
             }
@@ -465,7 +565,7 @@ app.post('/divided_form',(req,res)=>{
             from: 'takeme.home.lao@gmail.com',
             to:user_email,
             subject:'Your form is decline this is Your dog you would like to adopt',
-            text:'gooo'
+            text:'We are sorry your form is denie Because you are not ready to adopt them'
         }
         transporter.sendMail(mailOption,function(error,info){
             try {
@@ -485,7 +585,16 @@ app.post('/divided_form',(req,res)=>{
             try {   
                 if(error) throw error;
                     message="update success"
-                    res.send({error:false, data:results,status:1,message:message})
+                    // res.send({error:false, data:results,status:1,message:message})
+                } catch (error) {
+                            
+            }
+        })
+        dbCon.query('UPDATE tb_dogs SET dog_status = ? WHERE dog_id=?',[2,dog_id],(error,results,fields)=>{
+            try {   
+                if(error) throw error;
+                    message="update success"
+                    // res.send({error:false, data:results,status:1,message:message})
                 } catch (error) {
                             
             }
@@ -541,24 +650,97 @@ app.get('/dogs_data',(req,res)=>{
     })
 
 });
+app.get('/delete_dog_info',(req,res)=>{
+    dbCon.query('SELECT * ,timestampdiff(year,dog_dob,CURRENT_DATE) as age FROM tb_dogs where dog_status = 3',(error, results,fields)=>{
+        try {
+            if(error) throw error;
+        let message = ""
+		let status 
+		if(results === undefined || results.length == 0){
+			message ="Book table is empty"
+			status=0
+		}else {
+			message ="Succesfully retrieved all books"
+			status=1
+		}
+		return res.send({ error : false , data: results, message:message, status:status });
+        } catch (error) {
+            
+        }
+    })
+
+});
+app.get('/dogs_data_info',(req,res)=>{
+    dbCon.query('SELECT tb_dogs.* ,timestampdiff(year,dog_dob,CURRENT_DATE) as age, tb_dog_giver.giver_email FROM tb_dogs LEFT JOIN tb_dog_giver on tb_dogs.giver_id=tb_dog_giver.giver_id WHERE dog_status = 0 or dog_status = 1 or dog_status = 2 ',(error, results,fields)=>{
+        try {
+            if(error) throw error;
+        let message = ""
+		let status 
+		if(results === undefined || results.length == 0){
+			message ="Book table is empty"
+			status=0
+		}else {
+			message ="Succesfully retrieved all books"
+			status=1
+		}
+		return res.send({ error : false , data: results, message:message, status:status });
+        } catch (error) {
+            
+        }
+    })
+
+});
 
 // update dog
 app.post('/update_dogs',(req,res)=>{
-    const {dog_id,dog_name,dog_dob,dog_gender,dog_species} = req.body
-    if ( !dog_name || !dog_dob || !dog_gender || !dog_species || !dog_id  ) {
-        console.log(req.body)
-        return res.send({status: 2,message:'somefill empty' })
+    const {dog_id,dog_name,dog_dob,dog_gender,dog_species,giver_email} = req.body
+    if (!giver_email) {
+        if ( !dog_name || !dog_dob || !dog_gender || !dog_species || !dog_id  ) {
+            console.log(req.body)
+            return res.send({status: 2,message:'somefill empty' })
+        } else {
+            console.log(req.body)
+            dbCon.query('UPDATE tb_dogs SET dog_name = ?,dog_dob = ?,dog_gender = ?,dog_species = ? WHERE dog_id=?',[dog_name,dog_dob,dog_gender,dog_species,dog_id],(error,results,fields)=>{
+                try {   
+                    if(error) throw error;
+                        message="update success"
+                        return res.send({error:false, data:results,status:1,message:message})
+                    } catch (error) {
+                                
+                }
+            })
+        }
     } else {
-        console.log(req.body)
-        dbCon.query('UPDATE tb_dogs SET dog_name = ?,dog_dob = ?,dog_gender = ?,dog_species = ? WHERE dog_id=?',[dog_name,dog_dob,dog_gender,dog_species,dog_id],(error,results,fields)=>{
-            try {   
+        if (!dog_name || !dog_dob || !dog_gender || !dog_species ||!giver_email) {
+            return res.status(400).send({error : true,message:"there null field",status: 0})
+        } 
+        else {
+            let giver_id
+            dbCon.query('SELECT giver_id from tb_dog_giver WHERE giver_email = ?',giver_email,(error,result,fields)=>{
+            console.log(result.length === 0)
+            // return res.send({error:false,message:"succeswwawdas",status: 1})
+            try {
                 if(error) throw error;
-                    message="update success"
-                    return res.send({error:false, data:results,status:1,message:message})
-                } catch (error) {
+                let message=""
+                if (result.length===1) {
+                    giver_id=result[0].giver_id
+                        dbCon.query('UPDATE tb_dogs SET dog_name = ?,dog_dob = ?,dog_gender = ?,dog_species = ?,giver_id=? WHERE dog_id=?',[dog_name,dog_dob,dog_gender,dog_species,giver_id,dog_id],(error, results,fields)=>{
+                        try {
+                            return res.send({error:false,data:results,message:"succeswwawdas",status: 1})
+                        } catch (error) {
                             
+                        }
+
+                    })
+                }else{
+                    
+                return res.send({error:true,data:result,message:"email is not exist",status: 3})
+                }
+            } catch (error) {
+                
             }
         })
+        }
     }
 })
 
@@ -627,7 +809,7 @@ app.get('/province',(req,res)=>{
 app.get('/data_dog_id',(req,res)=>{
     let id = req.query.id
     // console.log(id)
-    dbCon.query('SELECT * FROM tb_dogs where dog_id='+id,(error, results,fields)=>{
+    dbCon.query('SELECT tb_dogs.*,tb_dog_giver.giver_email FROM tb_dogs LEFT JOIN tb_dog_giver ON tb_dogs.giver_id=tb_dog_giver.giver_id where dog_id='+id,(error, results,fields)=>{
 
         try {
             if(error) throw error;
