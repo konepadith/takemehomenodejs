@@ -200,6 +200,42 @@ app.get('/events_data',(req,res)=>{
     })
 })
 
+app.get('/events_data_adm',(req,res)=>{
+    dbCon.query('SELECT * FROM tb_events ',(error, results,fields)=>{
+        try {
+            if(error) throw error;
+        let message = ""
+		let status 
+		if(results === undefined || results.length == 0){
+			message ="Book table is empty"
+			status=0
+		}else {
+			message ="Succesfully retrieved all books"
+			status=1
+		}
+		return res.send({ error : false , data: results, message:message, status:status });
+        } catch (error) {
+            
+        }
+    })
+})
+app.post('/event_switch',(req,res)=>{
+    const {event_status,event_id}=req.body
+    console.log(req.body)
+    if (!event_status,!event_id) {
+        return res.status(400).send({error : true,message:"there null field"})
+    } else {
+        dbCon.query('UPDATE `tb_events` SET event_status=? WHERE event_id=?',[event_status,event_id],(error,results,fields)=>{
+            try {
+                if(error) throw error;
+                return res.send({error:false,data:results,message:"success",status: 1})
+            } catch (error) {
+                
+            }
+        })
+    }
+})
+
 // donate gateway
 app.post('/donate',async (req,res,next)=>{
     try {
@@ -366,7 +402,46 @@ app.post("/add_user_data", upload.single('image'),(req,res)=>{
         
     }
 })
+app.post("/add_admin_data", upload.single('image'),(req,res)=>{
 
+    const{admin_name,admin_surname,admin_gender,admin_password,admin_email,admin_dob,admin_village,admin_district,admin_province,admin_workplace,admin_phoneNumber}=req.body
+    
+    let admin_img = req.file.filename
+
+    if (!admin_name || !admin_surname ||!admin_gender || !admin_password || !admin_email || !admin_dob || !admin_village || !admin_district || !admin_province || !admin_workplace || !admin_phoneNumber) {
+        return res.status(400).send({error : true,message:"there null field"})
+    }else{
+
+        dbCon.query('SELECT admin_email from tb_admin where admin_email = ?',admin_email,(error,result,fields)=>{
+            try {
+                if(error) throw error;
+                let message=""
+                    if (result.length === 0) {
+
+                        dbCon.query('INSERT INTO tb_admin (admin_name, admin_surname, admin_gender, admin_password, admin_img, admin_email, admin_dob, admin_village, admin_district, admin_province, admin_workplace, admin_phoneNumber) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',[admin_name,admin_surname,admin_gender,crypto.createHash('md5').update(admin_password).digest('hex'),"http://localhost:3000/present/"+admin_img,admin_email,admin_dob,admin_village,admin_district,admin_province,admin_workplace,admin_phoneNumber],(error, results,fields)=>{
+                    try {
+                        if(error) throw error;
+                    message = "sign up successful"
+                    return res.send({error:false,data:results,message:"success",status: 1})
+                    } catch (error) {
+                        
+                    }
+                    })   
+                    } else {
+                        message = "this email is already exist";
+                        return res.send({error : true, data: result, message:message, status:0})
+                    
+                    }
+            } catch (error) {
+                
+            }
+        })
+
+
+
+        
+    }
+})
 app.post("/giver_register", upload.single('image'),(req,res)=>{
 
     const{giver_name,giver_surname,giver_gender,giver_email,giver_dob,giver_village,giver_district,giver_province,giver_workplace,giver_phoneNumber}=req.body
@@ -440,6 +515,37 @@ app.post('/login',  (req,res)=>{
     }else{
         dbCon.query("SELECT * FROM tb_users WHERE user_email = ? AND user_password = ?",[user_email,crypto.createHash('md5').update(user_password).digest('hex')],(error,results,fields)=>{
             try {
+
+                console.log(results)
+                if(error) throw error;
+            let message = ""
+            if (results.length > 0) {
+                
+                message = "Log in Success"
+                return res.send({error:false, message:message,data:results, status: 1 })
+            }else{
+                message = "Log in fail"
+                return res.send({error:true, message:message,data:results, status: 0 })
+
+            }
+            } catch (error) {
+                
+            }
+        })
+    }
+})
+
+app.post('/login_adm',  (req,res)=>{
+    const {admin_email, admin_password} =req.body
+    console.log(req.body)
+    if (!admin_email || !admin_password) {
+        
+        return res.send({status: 0 })
+    }else{
+        dbCon.query("SELECT * FROM tb_admin WHERE admin_email = ? AND admin_password = ?",[admin_email,crypto.createHash('md5').update(admin_password).digest('hex')],(error,results,fields)=>{
+            try {
+
+                console.log(results)
                 if(error) throw error;
             let message = ""
             if (results.length > 0) {
