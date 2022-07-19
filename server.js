@@ -222,7 +222,7 @@ app.get('/events_data_adm',(req,res)=>{
 app.post('/event_switch',(req,res)=>{
     const {event_status,event_id}=req.body
     console.log(req.body)
-    if (!event_status,!event_id) {
+    if (!event_status || !event_id) {
         return res.status(400).send({error : true,message:"there null field"})
     } else {
         dbCon.query('UPDATE `tb_events` SET event_status=? WHERE event_id=?',[event_status,event_id],(error,results,fields)=>{
@@ -264,6 +264,51 @@ app.post('/donate',async (req,res,next)=>{
 
 next()
 });
+app.post('/donateCash',(req,res)=>{
+    const {admin_id,name,surname,dob,email,donate_cash_price,donate_cash_for}=req.body
+    let donate_cash_bill=Date.now().toString()
+    const transporter = nodemailer.createTransport({
+        service:'gmail',
+        auth:{
+            user:'takeme.home.lao@gmail.com',
+            pass:'qvocpnlivsixerzf'
+        }
+    })
+    const mailOption = {
+        from: 'takeme.home.lao@gmail.com',
+        to:email,
+        subject:'Thank you For Donate',
+        text:'Amound'+donate_cash_price
+    }
+    console.log(req.body)
+    if (!admin_id|| !name|| !surname|| !email|| !dob || !donate_cash_price|| !donate_cash_for) {
+        return res.status(400).send({error : true,message:"there null field"})
+    } else {
+        dbCon.query('INSERT INTO tb_donate_cash(admin_id,name,surname,dob,email,donate_cash_bill,donate_cash_price,donate_cash_for)values(?,?,?,?,?,?,?,?)',
+        [admin_id,name,surname,dob,email,crypto.createHash('md5').update(donate_cash_bill).digest('hex'),donate_cash_price,donate_cash_for],(error,results,fields)=>{
+            try {
+                if(error) throw error;
+                transporter.sendMail(mailOption,function(error,info){
+                    try {
+                        if (error) {
+                            console.log(error)
+                            return res.send({error:true,status:0,msg:'fail'})
+                        } else {
+                            return res.send({error:false,data:results,message:"success",status: 1})
+                        }
+                    } catch (error) {
+                        
+                    }
+                })
+                // return res.send({error:false,data:results,message:"success",status: 1})
+            } catch (error) {
+                
+            }
+
+        })
+        
+    }
+})
 // add dog Data
 app.post("/add_dog_data", upload.single('image'),(req,res)=>{
 
@@ -942,6 +987,32 @@ app.get('/data_donate',(req,res)=>{
     let id = req.query.id
     // console.log(id)
     dbCon.query('SELECT * FROM tb_donate where user_id= ? ORDER BY donate_create_at DESC',id,(error, results,fields)=>{
+
+        try {
+            if(error) throw error;
+        let message = ""
+		let status 
+		if(results === undefined || results.length == 0){
+			message ="Book table is empty"
+			status=0
+		}else {
+			message ="Succesfully retrieved all books"
+			status=1
+		}
+		return res.send({ error : false , data: results, message:message, status:status });
+        } catch (error) {
+            
+        }
+
+        
+    })
+
+});
+
+app.get('/data_donateCash',(req,res)=>{
+    let id = req.query.id
+    // console.log(id)
+    dbCon.query('SELECT tb_donate_cash.*,tb_admin.admin_email FROM tb_donate_cash INNER JOIN tb_admin ON tb_donate_cash.admin_id = tb_admin.admin_id ORDER BY donate_cash_create_at DESC',id,(error, results,fields)=>{
 
         try {
             if(error) throw error;
