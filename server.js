@@ -164,11 +164,11 @@ app.get('/read_mail',(req,res)=>{
 })
 //event&news add
 app.post('/add_events',(req,res)=>{
-    const{event_topic,event_date, event_start, event_end, event_place, event_direction}=req.body
-    if (!event_topic || !event_date || !event_start || !event_end || !event_place || !event_direction) {
+    const{event_topic,event_date, event_start, event_end, event_place, event_direction,admin_id}=req.body
+    if (!event_topic || !event_date || !event_start || !event_end || !event_place || !event_direction || !admin_id) {
         return res.status(400).send({error : true,message:"there null field"})
     } else {
-        dbCon.query('INSERT INTO tb_events(event_topic, event_date, event_start,event_end,event_place,event_direction,event_status) VALUES(?,?,?,?,?,?,?)',[event_topic,event_date, 'From '+event_start, 'To '+event_end, event_place, event_direction, 1],(error,results,fields)=>{
+        dbCon.query('INSERT INTO tb_events(admin_id,event_topic, event_date, event_start,event_end,event_place,event_direction,event_status) VALUES(?,?,?,?,?,?,?,?)',[admin_id,event_topic,event_date, 'From '+event_start, 'To '+event_end, event_place, event_direction, 1],(error,results,fields)=>{
             try {
                 if(error) throw error;
             return res.send({error:false,data:results,message:"success",status: 1})
@@ -200,6 +200,7 @@ app.get('/events_data',(req,res)=>{
     })
 })
 
+
 app.get('/events_data_adm',(req,res)=>{
     dbCon.query('SELECT * FROM tb_events ',(error, results,fields)=>{
         try {
@@ -222,7 +223,7 @@ app.get('/events_data_adm',(req,res)=>{
 app.post('/event_switch',(req,res)=>{
     const {event_status,event_id}=req.body
     console.log(req.body)
-    if (!event_status || !event_id) {
+    if (event_status=='null' || !event_id) {
         return res.status(400).send({error : true,message:"there null field"})
     } else {
         dbCon.query('UPDATE `tb_events` SET event_status=? WHERE event_id=?',[event_status,event_id],(error,results,fields)=>{
@@ -332,20 +333,20 @@ app.post("/add_dog_data", upload.single('image'),(req,res)=>{
 // add dog Data array
 app.post("/add_dog_data_array", upload.array('images'),(req,res)=>{
 
-    const {dog_name,dog_dob,dog_gender,dog_species,giver_email} = req.body
+    const {admin_id,dog_name,dog_dob,dog_gender,dog_species,giver_email,dog_bg} = req.body
     let dog_img=req.files[0].filename
     let dog_img2=req.files[1].filename
     let dog_img3=req.files[2].filename
     let dog_img4=req.files[3].filename
     let dog_img5=req.files[4].filename
-    // console.log(req.body)
+    console.log(giver_email=='null')
     // console.log(req.files)
-   
-    if (!giver_email) {
-        if (!dog_name || !dog_dob || !dog_gender || !dog_species || !dog_img) {
+    
+    if (giver_email=='null') {
+        if (!dog_name || !dog_dob || !dog_gender || !dog_species || !dog_img || !admin_id || !dog_bg) {
             return res.status(400).send({error : true,message:"there null field",status: 0})
         } else {
-            dbCon.query('INSERT INTO tb_dogs (dog_name, dog_dob, dog_gender, dog_species, dog_img, dog_img2,dog_img3,dog_img4,dog_img5) VALUES(?,?,?,?,?,?,?,?,?)',[dog_name,dog_dob,dog_gender,dog_species,"http://localhost:3000/present/"+dog_img,"http://localhost:3000/present/"+dog_img2,"http://localhost:3000/present/"+dog_img3,"http://localhost:3000/present/"+dog_img4,"http://localhost:3000/present/"+dog_img5],(error, results,fields)=>{
+            dbCon.query('INSERT INTO tb_dogs (admin_id,dog_name, dog_dob, dog_gender,dog_bg, dog_species, dog_img, dog_img2,dog_img3,dog_img4,dog_img5) VALUES(?,?,?,?,?,?,?,?,?,?,?)',[admin_id,dog_name,dog_dob,dog_gender,dog_bg,dog_species,"http://localhost:3000/present/"+dog_img,"http://localhost:3000/present/"+dog_img2,"http://localhost:3000/present/"+dog_img3,"http://localhost:3000/present/"+dog_img4,"http://localhost:3000/present/"+dog_img5],(error, results,fields)=>{
                 try {
                     if(error) throw error;
                 return res.send({error:false,data:results,message:"success",status:1})
@@ -356,6 +357,7 @@ app.post("/add_dog_data_array", upload.array('images'),(req,res)=>{
         }
         // return res.send({error:false,data:result,message:"success",staus:1})
     } else {
+        // console.log(giver_email)
         if (!dog_name || !dog_dob || !dog_gender || !dog_species || !dog_img ||!giver_email) {
             return res.status(400).send({error : true,message:"there null field",status: 0})
         } 
@@ -368,7 +370,7 @@ app.post("/add_dog_data_array", upload.array('images'),(req,res)=>{
                     let message=""
                     if (result.length===1) {
                         giver_id=result[0].giver_id
-                            dbCon.query('INSERT INTO tb_dogs (dog_name, dog_dob, dog_gender, dog_species, dog_img, dog_img2,dog_img3,dog_img4,dog_img5,giver_id) VALUES(?,?,?,?,?,?,?,?,?,?)',[dog_name,dog_dob,dog_gender,dog_species,"http://localhost:3000/present/"+dog_img,"http://localhost:3000/present/"+dog_img2,"http://localhost:3000/present/"+dog_img3,"http://localhost:3000/present/"+dog_img4,"http://localhost:3000/present/"+dog_img5,giver_id],(error, results,fields)=>{
+                            dbCon.query('INSERT INTO tb_dogs (admin_id,dog_name, dog_dob, dog_gender, dog_species, dog_img, dog_img2,dog_img3,dog_img4,dog_img5,giver_id) VALUES(?,?,?,?,?,?,?,?,?,?,?)',[admin_id,dog_name,dog_dob,dog_gender,dog_species,"http://localhost:3000/present/"+dog_img,"http://localhost:3000/present/"+dog_img2,"http://localhost:3000/present/"+dog_img3,"http://localhost:3000/present/"+dog_img4,"http://localhost:3000/present/"+dog_img5,giver_id],(error, results,fields)=>{
                             try {
                                 return res.send({error:false,data:results,message:"succeswwawdas",status: 1})
                             } catch (error) {
@@ -489,11 +491,11 @@ app.post("/add_admin_data", upload.single('image'),(req,res)=>{
 })
 app.post("/giver_register", upload.single('image'),(req,res)=>{
 
-    const{giver_name,giver_surname,giver_gender,giver_email,giver_dob,giver_village,giver_district,giver_province,giver_workplace,giver_phoneNumber}=req.body
+    const{giver_name,giver_surname,giver_gender,giver_email,giver_dob,giver_village,giver_district,giver_province,giver_workplace,giver_phoneNumber,admin_id}=req.body
     
    
     // console.log(req.body)
-    if (!giver_name || !giver_surname ||!giver_gender || !giver_email || !giver_dob || !giver_village || !giver_district || !giver_province || !giver_workplace || !giver_phoneNumber) {
+    if (!giver_name || !giver_surname ||!giver_gender || !giver_email || !giver_dob || !giver_village || !giver_district || !giver_province || !giver_workplace || !giver_phoneNumber || !admin_id) {
         return res.status(400).send({error : true,message:"there null field"})
     }else{
 
@@ -505,7 +507,7 @@ app.post("/giver_register", upload.single('image'),(req,res)=>{
                 let message=""
                     if (result.length === 0) {
 
-                        dbCon.query('INSERT INTO tb_dog_giver (giver_name, giver_surname, giver_gender, giver_img, giver_email, giver_dob, giver_village, giver_district, giver_province, giver_workplace, giver_phoneNumber) VALUES(?,?,?,?,?,?,?,?,?,?,?)',[giver_name,giver_surname,giver_gender,"http://localhost:3000/present/"+giver_img,giver_email,giver_dob,giver_village,giver_district,giver_province,giver_workplace,giver_phoneNumber],(error, results,fields)=>{
+                        dbCon.query('INSERT INTO tb_dog_giver (admin_id,giver_name, giver_surname, giver_gender, giver_img, giver_email, giver_dob, giver_village, giver_district, giver_province, giver_workplace, giver_phoneNumber) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',[admin_id,giver_name,giver_surname,giver_gender,"http://localhost:3000/present/"+giver_img,giver_email,giver_dob,giver_village,giver_district,giver_province,giver_workplace,giver_phoneNumber],(error, results,fields)=>{
                     try {
                         if(error) throw error;
                     message = "sign up successful"
@@ -653,14 +655,14 @@ app.get('/form_show',(req,res)=>{
     })
 })
 app.post('/divided_form',(req,res)=>{
-    const{user_email,form_id,dog_id,form_status}=req.body
+    const{user_email,form_id,dog_id,form_status,admin_id}=req.body
     // console.log(req.body)
     // status= 1 Acecpt
     // status = 2 Decline
     // status = 3 Purchase
     if (form_status==1) {
         console.log("status = 1")
-        dbCon.query('UPDATE tb_form_adopt SET form_status = ? WHERE form_id=?',[form_status,form_id],(error,results,fields)=>{
+        dbCon.query('UPDATE tb_form_adopt SET form_status = ?,admin_id=? WHERE form_id=?',[form_status,admin_id,form_id],(error,results,fields)=>{
             try {   
                 if(error) throw error;
                     message="update success"
@@ -696,7 +698,7 @@ app.post('/divided_form',(req,res)=>{
             }
         })
     } else if(form_status==2){
-        dbCon.query('UPDATE tb_form_adopt SET form_status = ? WHERE form_id=?',[form_status,form_id],(error,results,fields)=>{
+        dbCon.query('UPDATE tb_form_adopt SET form_status = ?,admin_id=? WHERE form_id=?',[form_status,admin_id,form_id],(error,results,fields)=>{
             try {   
                 if(error) throw error;
                     message="update success"
@@ -732,7 +734,7 @@ app.post('/divided_form',(req,res)=>{
             }
         })
     }else if (form_status==3) {
-        dbCon.query('UPDATE tb_form_adopt SET form_status = ? WHERE form_id=?',[form_status,form_id],(error,results,fields)=>{
+        dbCon.query('UPDATE tb_form_adopt SET form_status = ?,admin_id=? WHERE form_id=?',[form_status,admin_id,form_id],(error,results,fields)=>{
             try {   
                 if(error) throw error;
                     message="update success"
@@ -801,6 +803,28 @@ app.get('/dogs_data',(req,res)=>{
     })
 
 });
+
+app.get('/dogs_count_0',(req,res)=>{
+    dbCon.query('SELECT COUNT(dog_id) as number FROM `tb_dogs` WHERE dog_status != 3',(error, results,fields)=>{
+        try {
+            if(error) throw error;
+        let message = ""
+		let status 
+		if(results === undefined || results.length == 0){
+			message ="Book table is empty"
+			status=0
+		}else {
+			message ="Succesfully retrieved all books"
+			status=1
+		}
+		return res.send({ error : false , data: results, message:message, status:status });
+        } catch (error) {
+            
+        }
+    })
+
+});
+
 app.get('/delete_dog_info',(req,res)=>{
     dbCon.query('SELECT * ,timestampdiff(year,dog_dob,CURRENT_DATE) as age FROM tb_dogs where dog_status = 3',(error, results,fields)=>{
         try {
@@ -1005,6 +1029,28 @@ app.get('/data_donate',(req,res)=>{
         }
 
         
+    })
+
+});
+
+app.get('/report_donate',(req,res)=>{
+    dbCon.query('SELECT year(donate_create_at),month(donate_create_at),SUM(donate_price) FROM tb_donate group by year(donate_create_at),month(donate_create_at) order by year(donate_create_at),month(donate_create_at)',(error, results,fields)=>{
+
+        try {
+            if(error) throw error;
+        let message = ""
+		let status 
+		if(results === undefined || results.length == 0){
+			message ="Book table is empty"
+			status=0
+		}else {
+			message ="Succesfully retrieved all books"
+			status=1
+		}
+		return res.send({ error : false , data: results, message:message, status:status });
+        } catch (error) {
+            
+        }
     })
 
 });
