@@ -336,17 +336,18 @@ app.post("/add_dog_data_array", upload.array('images'),(req,res)=>{
     const {admin_id,dog_name,dog_dob,dog_gender,dog_species,giver_email,dog_bg} = req.body
     let dog_img=req.files[0].filename
     let dog_img2=req.files[1].filename
-    let dog_img3=req.files[2].filename
-    let dog_img4=req.files[3].filename
-    let dog_img5=req.files[4].filename
+    // let dog_img3=req.files[2].filename
+    // let dog_img4=req.files[3].filename
+    // let dog_img5=req.files[4].filename
     console.log(giver_email=='null')
     // console.log(req.files)
     
-    if (giver_email=='null') {
+    if (giver_email=='null' || !giver_email) {
+        console.log('giver')
         if (!dog_name || !dog_dob || !dog_gender || !dog_species || !dog_img || !admin_id || !dog_bg) {
             return res.status(400).send({error : true,message:"there null field",status: 0})
         } else {
-            dbCon.query('INSERT INTO tb_dogs (admin_id,dog_name, dog_dob, dog_gender,dog_bg, dog_species, dog_img, dog_img2,dog_img3,dog_img4,dog_img5) VALUES(?,?,?,?,?,?,?,?,?,?,?)',[admin_id,dog_name,dog_dob,dog_gender,dog_bg,dog_species,"http://localhost:3000/present/"+dog_img,"http://localhost:3000/present/"+dog_img2,"http://localhost:3000/present/"+dog_img3,"http://localhost:3000/present/"+dog_img4,"http://localhost:3000/present/"+dog_img5],(error, results,fields)=>{
+            dbCon.query('INSERT INTO tb_dogs (admin_id,dog_name, dog_dob, dog_gender,dog_bg, dog_species, dog_img, dog_img2) VALUES(?,?,?,?,?,?,?,?)',[admin_id,dog_name,dog_dob,dog_gender,dog_bg,dog_species,"http://localhost:3000/present/"+dog_img,"http://localhost:3000/present/"+dog_img2,"http://localhost:3000/present/"],(error, results,fields)=>{
                 try {
                     if(error) throw error;
                 return res.send({error:false,data:results,message:"success",status:1})
@@ -370,7 +371,7 @@ app.post("/add_dog_data_array", upload.array('images'),(req,res)=>{
                     let message=""
                     if (result.length===1) {
                         giver_id=result[0].giver_id
-                            dbCon.query('INSERT INTO tb_dogs (admin_id,dog_name, dog_dob, dog_gender, dog_species, dog_img, dog_img2,dog_img3,dog_img4,dog_img5,giver_id) VALUES(?,?,?,?,?,?,?,?,?,?,?)',[admin_id,dog_name,dog_dob,dog_gender,dog_species,"http://localhost:3000/present/"+dog_img,"http://localhost:3000/present/"+dog_img2,"http://localhost:3000/present/"+dog_img3,"http://localhost:3000/present/"+dog_img4,"http://localhost:3000/present/"+dog_img5,giver_id],(error, results,fields)=>{
+                            dbCon.query('INSERT INTO tb_dogs (admin_id,dog_name, dog_dob, dog_gender, dog_species, dog_img, dog_img2,giver_id) VALUES(?,?,?,?,?,?,?,?)',[admin_id,dog_name,dog_dob,dog_gender,dog_species,"http://localhost:3000/present/"+dog_img,"http://localhost:3000/present/"+dog_img2,giver_id],(error, results,fields)=>{
                             try {
                                 return res.send({error:false,data:results,message:"succeswwawdas",status: 1})
                             } catch (error) {
@@ -984,7 +985,7 @@ app.get('/province',(req,res)=>{
 app.get('/data_dog_id',(req,res)=>{
     let id = req.query.id
     // console.log(id)
-    dbCon.query('SELECT tb_dogs.*,tb_dog_giver.giver_email FROM tb_dogs LEFT JOIN tb_dog_giver ON tb_dogs.giver_id=tb_dog_giver.giver_id where dog_id='+id,(error, results,fields)=>{
+    dbCon.query('SELECT tb_dogs.*,tb_dog_giver.giver_email FROM tb_dogs LEFT JOIN tb_dog_giver ON tb_dogs.giver_id=tb_dog_giver.giver_id where dog_id= ? AND dog_status !=3',id,(error, results,fields)=>{
 
         try {
             if(error) throw error;
