@@ -1122,6 +1122,111 @@ app.get('/show_form_uid',(req,res)=>{
     })
 })
 
+
+//report
+app.get('/report_dog',(req,res)=>{
+    let status= req.query.status
+
+    if (status === '101') {
+        dbCon.query('SELECT d.*,a.admin_email,g.giver_email FROM tb_dogs d INNER JOIN tb_admin a ON d.admin_id = a.admin_id LEFT JOIN tb_dog_giver g ON d.giver_id =g.giver_id',(error,results,fields)=>{
+            try {
+                if(error) throw error;
+                let message=""
+                let status
+                if(results === undefined || results.length == 0){
+                    message ="Book table is empty"
+                    status=0
+                }else {
+                    message ="Succesfully retrieved all books"
+                    status=1
+                }
+                return res.send({ error : false , data: results, message:message, status:status });
+            } catch (error) {
+                
+            }
+        })
+    } else if(status === '0'){
+        dbCon.query('SELECT d.*,a.admin_email,g.giver_email FROM tb_dogs d INNER JOIN tb_admin a ON d.admin_id = a.admin_id LEFT JOIN tb_dog_giver g ON d.giver_id =g.giver_id WHERE dog_status = ?	',status,(error,results,fields)=>{
+            try {
+                if(error) throw error;
+                let message=""
+                let status
+                if(results === undefined || results.length == 0){
+                    message ="Book table is empty"
+                    status=0
+                }else {
+                    message ="Succesfully retrieved all books"
+                    status=1
+                }
+                return res.send({ error : false , data: results, message:message, status:status });
+            } catch (error) {
+                
+            }
+        })
+    }else if(status === '1'){
+        dbCon.query('SELECT d.*,a.admin_email,g.giver_email FROM tb_dogs d INNER JOIN tb_admin a ON d.admin_id = a.admin_id LEFT JOIN tb_dog_giver g ON d.giver_id =g.giver_id WHERE dog_status = ?	',status,(error,results,fields)=>{
+            try {
+                if(error) throw error;
+                let message=""
+                let status
+                if(results === undefined || results.length == 0){
+                    message ="Book table is empty"
+                    status=0
+                }else {
+                    message ="Succesfully retrieved all books"
+                    status=1
+                }
+                return res.send({ error : false , data: results, message:message, status:status });
+            } catch (error) {
+                
+            }
+        })
+    }else if(status === '2'){
+        dbCon.query('SELECT d.*,a.admin_email,g.giver_email FROM tb_dogs d INNER JOIN tb_admin a ON d.admin_id = a.admin_id LEFT JOIN tb_dog_giver g ON d.giver_id =g.giver_id WHERE dog_status = ?	',status,(error,results,fields)=>{
+            try {
+                if(error) throw error;
+                let message=""
+                let status
+                if(results === undefined || results.length == 0){
+                    message ="Book table is empty"
+                    status=0
+                }else {
+                    message ="Succesfully retrieved all books"
+                    status=1
+                }
+                return res.send({ error : false , data: results, message:message, status:status });
+            } catch (error) {
+                
+            }
+        })
+    }else if(status === '3'){
+        dbCon.query('SELECT d.*,a.admin_email,g.giver_email FROM tb_dogs d INNER JOIN tb_admin a ON d.admin_id = a.admin_id LEFT JOIN tb_dog_giver g ON d.giver_id =g.giver_id WHERE dog_status = ?	',status,(error,results,fields)=>{
+            try {
+                if(error) throw error;
+                let message=""
+                let status
+                if(results === undefined || results.length == 0){
+                    message ="Book table is empty"
+                    status=0
+                }else {
+                    message ="Succesfully retrieved all books"
+                    status=1
+                }
+                return res.send({ error : false , data: results, message:message, status:status });
+            } catch (error) {
+                
+            }
+        })
+    }else{
+        return res.send({ error : false , message:'something wrong', status:0 });
+    }
+
+    
+})
+
+
+
+
 // create path Image represent
 app.use('/present', express.static('./images'));
 
