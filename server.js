@@ -1146,61 +1146,7 @@ app.get('/report_dog',(req,res)=>{
                 
             }
         })
-    } else if(status === '0'){
-        dbCon.query('SELECT d.*,a.admin_email,g.giver_email FROM tb_dogs d INNER JOIN tb_admin a ON d.admin_id = a.admin_id LEFT JOIN tb_dog_giver g ON d.giver_id =g.giver_id WHERE dog_status = ?	',status,(error,results,fields)=>{
-            try {
-                if(error) throw error;
-                let message=""
-                let status
-                if(results === undefined || results.length == 0){
-                    message ="Book table is empty"
-                    status=0
-                }else {
-                    message ="Succesfully retrieved all books"
-                    status=1
-                }
-                return res.send({ error : false , data: results, message:message, status:status });
-            } catch (error) {
-                
-            }
-        })
-    }else if(status === '1'){
-        dbCon.query('SELECT d.*,a.admin_email,g.giver_email FROM tb_dogs d INNER JOIN tb_admin a ON d.admin_id = a.admin_id LEFT JOIN tb_dog_giver g ON d.giver_id =g.giver_id WHERE dog_status = ?	',status,(error,results,fields)=>{
-            try {
-                if(error) throw error;
-                let message=""
-                let status
-                if(results === undefined || results.length == 0){
-                    message ="Book table is empty"
-                    status=0
-                }else {
-                    message ="Succesfully retrieved all books"
-                    status=1
-                }
-                return res.send({ error : false , data: results, message:message, status:status });
-            } catch (error) {
-                
-            }
-        })
-    }else if(status === '2'){
-        dbCon.query('SELECT d.*,a.admin_email,g.giver_email FROM tb_dogs d INNER JOIN tb_admin a ON d.admin_id = a.admin_id LEFT JOIN tb_dog_giver g ON d.giver_id =g.giver_id WHERE dog_status = ?	',status,(error,results,fields)=>{
-            try {
-                if(error) throw error;
-                let message=""
-                let status
-                if(results === undefined || results.length == 0){
-                    message ="Book table is empty"
-                    status=0
-                }else {
-                    message ="Succesfully retrieved all books"
-                    status=1
-                }
-                return res.send({ error : false , data: results, message:message, status:status });
-            } catch (error) {
-                
-            }
-        })
-    }else if(status === '3'){
+    } else if(status !== '101'){
         dbCon.query('SELECT d.*,a.admin_email,g.giver_email FROM tb_dogs d INNER JOIN tb_admin a ON d.admin_id = a.admin_id LEFT JOIN tb_dog_giver g ON d.giver_id =g.giver_id WHERE dog_status = ?	',status,(error,results,fields)=>{
             try {
                 if(error) throw error;
@@ -1224,7 +1170,70 @@ app.get('/report_dog',(req,res)=>{
 
     
 })
+app.get('/report_user',(req,res)=>{
+    dbCon.query('SELECT tb_users.*,tb_province.name_lao as province,tb_district.name_lao as district,tb_village.name_lao as village FROM tb_users INNER JOIN tb_province ON tb_users.user_province = tb_province.id_province INNER JOIN tb_district ON tb_users.user_district = tb_district.id_district INNER JOIN tb_village ON tb_users.user_village = tb_village.id_village',(error,results,fields)=>{
+        try {
+            if(error) throw error;
+            let message=""
+            let status
+            if(results === undefined || results.length == 0){
+                message ="Book table is empty"
+                status=0
+            }else {
+                message ="Succesfully retrieved all books"
+                status=1
+            }
+            return res.send({ error : false , data: results, message:message, status:status });
+        } catch (error) {
+            
+        }
+    })
+})
+app.get('/report_form',(req,res)=>{
+    let status= req.query.status
 
+    if (status === '101') {
+        dbCon.query('SELECT tb_form_adopt.*,tb_admin.admin_email as admin_email,tb_users.user_email as user_email,tb_users.user_img as user_img,tb_dogs.dog_name as dog_name,tb_dogs.dog_img as dog_img FROM tb_form_adopt LEFT JOIN tb_admin ON tb_form_adopt.admin_id = tb_admin.admin_id INNER JOIN tb_users ON tb_form_adopt.user_id = tb_users.user_id INNER JOIN tb_dogs ON tb_form_adopt.dog_id = tb_dogs.dog_id',(error,results,fields)=>{
+            try {
+                if(error) throw error;
+                let message=""
+                let status
+                if(results === undefined || results.length == 0){
+                    message ="Book table is empty"
+                    status=0
+                }else {
+                    message ="Succesfully retrieved all books"
+                    status=1
+                }
+                return res.send({ error : false , data: results, message:message, status:status });
+            } catch (error) {
+                
+            }
+        })
+    } else if(status !== '101'){
+        dbCon.query('SELECT tb_form_adopt.*,tb_admin.admin_email as admin_email,tb_users.user_email as user_email,tb_users.user_img as user_img,tb_dogs.dog_name as dog_name,tb_dogs.dog_img as dog_img FROM tb_form_adopt LEFT JOIN tb_admin ON tb_form_adopt.admin_id = tb_admin.admin_id INNER JOIN tb_users ON tb_form_adopt.user_id = tb_users.user_id INNER JOIN tb_dogs ON tb_form_adopt.dog_id = tb_dogs.dog_id WHERE tb_form_adopt.form_status = ?	',status,(error,results,fields)=>{
+            try {
+                if(error) throw error;
+                let message=""
+                let status
+                if(results === undefined || results.length == 0){
+                    message ="Book table is empty"
+                    status=0
+                }else {
+                    message ="Succesfully retrieved all books"
+                    status=1
+                }
+                return res.send({ error : false , data: results, message:message, status:status });
+            } catch (error) {
+                
+            }
+        })
+    }else{
+        return res.send({ error : false , message:'something wrong', status:0 });
+    }
+
+    
+})
 
 
 
