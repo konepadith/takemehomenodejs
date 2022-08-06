@@ -1034,27 +1034,27 @@ app.get('/data_donate',(req,res)=>{
 
 });
 
-app.get('/report_donate',(req,res)=>{
-    dbCon.query('SELECT year(donate_create_at),month(donate_create_at),SUM(donate_price) FROM tb_donate group by year(donate_create_at),month(donate_create_at) order by year(donate_create_at),month(donate_create_at)',(error, results,fields)=>{
+// app.get('/report_donate',(req,res)=>{
+//     dbCon.query('SELECT year(donate_create_at),month(donate_create_at),SUM(donate_price) FROM tb_donate group by year(donate_create_at),month(donate_create_at) order by year(donate_create_at),month(donate_create_at)',(error, results,fields)=>{
 
-        try {
-            if(error) throw error;
-        let message = ""
-		let status 
-		if(results === undefined || results.length == 0){
-			message ="Book table is empty"
-			status=0
-		}else {
-			message ="Succesfully retrieved all books"
-			status=1
-		}
-		return res.send({ error : false , data: results, message:message, status:status });
-        } catch (error) {
+//         try {
+//             if(error) throw error;
+//         let message = ""
+// 		let status 
+// 		if(results === undefined || results.length == 0){
+// 			message ="Book table is empty"
+// 			status=0
+// 		}else {
+// 			message ="Succesfully retrieved all books"
+// 			status=1
+// 		}
+// 		return res.send({ error : false , data: results, message:message, status:status });
+//         } catch (error) {
             
-        }
-    })
+//         }
+//     })
 
-});
+// });
 
 app.get('/data_donateCash',(req,res)=>{
     let id = req.query.id
@@ -1234,8 +1234,47 @@ app.get('/report_form',(req,res)=>{
 
     
 })
-
-
+app.get('/report_donate',(req,res)=>{
+    let OnDonate
+    let OffDonate
+    dbCon.query('SELECT * FROM tb_donate',(error,results,fields)=>{
+        try {
+            if(error) throw error;
+            let message=""
+            let status
+            if(results === undefined || results.length == 0){
+                message ="Book table is empty"
+                status=0
+            }else {
+                message ="Succesfully retrieved all books"
+                status=1
+            }
+            return OnDonate={ error : false , data: results, message:message, status:status }
+            // return res.send({ error : false , data: results, message:message, status:status });
+        } catch (error) {
+            
+        }
+    })
+    dbCon.query('SELECT * FROM tb_donate_cash',(error,results,fields)=>{
+        try {
+            if(error) throw error;
+            let message=""
+            let status
+            if(results === undefined || results.length == 0){
+                message ="Book table is empty"
+                status=0
+            }else {
+                message ="Succesfully retrieved all books"
+                status=1
+            }
+             return OffDonate={ error : false , data: results, message:message, status:status }
+            // return res.send({ error : false , data: results, message:message, status:status });
+        } catch (error) {
+            
+        }
+    })
+    return res.send({ error : false , OnDonate: OnDonate, OffDonate : OffDonate, status:1 });
+})
 
 // create path Image represent
 app.use('/present', express.static('./images'));
