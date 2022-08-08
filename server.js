@@ -168,7 +168,7 @@ app.post('/add_events',(req,res)=>{
     if (!event_topic || !event_date || !event_start || !event_end || !event_place || !event_direction || !admin_id) {
         return res.status(400).send({error : true,message:"there null field"})
     } else {
-        dbCon.query('INSERT INTO tb_events(admin_id,event_topic, event_date, event_start,event_end,event_place,event_direction,event_status) VALUES(?,?,?,?,?,?,?,?)',[admin_id,event_topic,event_date, 'From '+event_start, 'To '+event_end, event_place, event_direction, 1],(error,results,fields)=>{
+        dbCon.query('INSERT INTO tb_events(admin_id,event_topic, event_date, event_start,event_end,event_place,event_direction,event_status) VALUES(?,?,?,?,?,?,?,?)',[admin_id,event_topic,event_date, event_start,event_end, event_place, event_direction, 1],(error,results,fields)=>{
             try {
                 if(error) throw error;
             return res.send({error:false,data:results,message:"success",status: 1})
@@ -237,6 +237,38 @@ app.post('/event_switch',(req,res)=>{
     }
 })
 
+app.post('/update_event',(req,res)=>{
+    const {event_id,admin_id,event_topic,event_date,event_start, event_end,event_place,event_direction,event_status}=req.body
+    console.log(req.body)
+    if (!event_topic ||!event_date ||!event_start ||! event_end ||!event_place ||!event_direction ||!event_status ||!admin_id ||!event_id) {
+        return res.status(400).send({error : true,message:"there null field"})
+    } else {
+        dbCon.query('UPDATE tb_events SET admin_id = ?,event_topic = ?,event_date = ?,event_start = ?, event_end = ?,event_place = ?,event_direction = ?,event_status=? WHERE event_id=?',[admin_id,event_topic,event_date,event_start, event_end,event_place,event_direction,event_status,event_id],(error,results,fields)=>{
+            try {
+                if(error) throw error;
+                return res.send({error:false,data:req.body,message:"success",status: 1})
+            } catch (error) {
+                
+            }
+        })
+    }
+})
+app.delete('/delete_event/:event_id',(req,res)=>{
+    const {event_id}=req.params
+    console.log(req.params)
+    if (!event_id) {
+        return res.status(400).send({error : true,message:"there null field"})
+    } else {
+        dbCon.query('DELETE FROM tb_events WHERE event_id = ?',[event_id],(error,results,fields)=>{
+            try {
+                if(error) throw error;
+                return res.send({error:false,data:req.body,message:"success",status: 1})
+            } catch (error) {
+                
+            }
+        })
+    }
+})
 // donate gateway
 app.post('/donate',async (req,res,next)=>{
     try {
@@ -1235,9 +1267,7 @@ app.get('/report_form',(req,res)=>{
     
 })
 app.get('/report_donate',(req,res)=>{
-    let OnDonate
-    let OffDonate
-    dbCon.query('SELECT * FROM tb_donate',(error,results,fields)=>{
+    dbCon.query('SELECT tb_donate.*,tb_users.user_name FROM tb_donate INNER JOIN tb_users ON tb_donate.user_id=tb_users.user_id ORDER BY donate_create_at DESC',(error,results,fields)=>{
         try {
             if(error) throw error;
             let message=""
@@ -1249,13 +1279,15 @@ app.get('/report_donate',(req,res)=>{
                 message ="Succesfully retrieved all books"
                 status=1
             }
-            return OnDonate={ error : false , data: results, message:message, status:status }
-            // return res.send({ error : false , data: results, message:message, status:status });
+            console.log(results)
+            return res.send({ error : false , data: results, message:message, status:status });
         } catch (error) {
             
         }
     })
-    dbCon.query('SELECT * FROM tb_donate_cash',(error,results,fields)=>{
+})
+app.get('/report_donate_cash',(req,res)=>{
+    dbCon.query('SELECT tb_donate_cash.*,tb_admin.admin_email FROM tb_donate_cash INNER JOIN tb_admin ON tb_donate_cash.admin_id = tb_admin.admin_id ORDER BY donate_cash_create_at DESC',(error,results,fields)=>{
         try {
             if(error) throw error;
             let message=""
@@ -1267,23 +1299,68 @@ app.get('/report_donate',(req,res)=>{
                 message ="Succesfully retrieved all books"
                 status=1
             }
-             return OffDonate={ error : false , data: results, message:message, status:status }
-            // return res.send({ error : false , data: results, message:message, status:status });
+            return res.send({ error : false , data: results, message:message, status:status });
         } catch (error) {
             
         }
     })
-    return res.send({ error : false , OnDonate: OnDonate, OffDonate : OffDonate, status:1 });
+})
+app.get('/report_giver',(req,res)=>{
+    dbCon.query('SELECT tb_dog_giver.*,tb_province.name_lao as province,tb_district.name_lao as district,tb_village.name_lao as village,tb_dogs.dog_name FROM tb_dog_giver INNER JOIN tb_province ON tb_dog_giver.giver_province = tb_province.id_province INNER JOIN tb_district ON tb_dog_giver.giver_district = tb_district.id_district INNER JOIN tb_village ON tb_dog_giver.giver_village = tb_village.id_village LEFT JOIN tb_dogs ON tb_dog_giver.giver_id = tb_dogs.giver_id',(error,results,fields)=>{
+        try {
+            if(error) throw error;
+            let message=""
+            let status
+            if(results === undefined || results.length == 0){
+                message ="Book table is empty"
+                status=0
+            }else {
+                message ="Succesfully retrieved all books"
+                status=1
+            }
+            return res.send({ error : false , data: results, message:message, status:status });
+        } catch (error) {
+            
+        }
+    })
+})
+app.post('/update_giver', upload.single('image'),(req,res)=>{
+    const{admin_id,giver_name,giver_surname,giver_gender,giver_email,giver_dob,giver_village,giver_district,giver_province,giver_workplace,giver_phoneNumber,giver_id}=req.body
+
+
+    if (!admin_id||!giver_name||!giver_surname||!giver_gender||!giver_email||!giver_dob||!giver_village||!giver_district||!giver_province||!giver_workplace||!giver_phoneNumber||!giver_id) {
+        return res.send({status: 2,message:'somefill empty' })
+    } else {
+        if (req.file != null) {
+            console.log('there img')
+            let giver_img = req.file.filename
+            
+            dbCon.query('UPDATE tb_dog_giver SET admin_id = ?,giver_name=?,giver_surname=?,giver_gender=?,giver_email=?,giver_dob=?,giver_village=?,giver_district=?,giver_province=?,giver_workplace=?,giver_phoneNumber=?,giver_img=? WHERE giver_id =?',[admin_id,giver_name,giver_surname,giver_gender,giver_email,giver_dob,giver_village,giver_district,giver_province,giver_workplace,giver_phoneNumber,"http://localhost:3000/present/"+giver_img,giver_id],(error,results,fields)=>{
+    
+                try {
+                    if(error) throw error;
+                    return res.send({error:false,data:results,message:"success",status: 1})
+                } catch (error) {
+                    
+                }
+            })
+        } else if(req.file == null) {
+            console.log('no image')
+            dbCon.query('UPDATE tb_dog_giver SET admin_id = ?,giver_name=?,giver_surname=?,giver_gender=?,giver_email=?,giver_dob=?,giver_village=?,giver_district=?,giver_province=?,giver_workplace=?,giver_phoneNumber=? WHERE giver_id =?',[admin_id,giver_name,giver_surname,giver_gender,giver_email,giver_dob,giver_village,giver_district,giver_province,giver_workplace,giver_phoneNumber,giver_id],(error,results,fields)=>{
+    
+                try {
+                    if(error) throw error;
+                    return res.send({error:false,data:results,message:"success",status: 1})
+                } catch (error) {
+                    
+                }
+            })
+        }
+    }
 })
 
 // create path Image represent
 app.use('/present', express.static('./images'));
-
-
-
-
-
-
 
 
 
