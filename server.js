@@ -79,7 +79,7 @@ app.get('/' , (req,res)=>{
 })
 //send email
 app.post('/mailing',(req,res)=>{
-    const {emailto,subject,text}=req.body
+    const {emailto,subject,text,admin_id}=req.body
     const transporter = nodemailer.createTransport({
         service:'gmail',
         auth:{
@@ -99,6 +99,13 @@ app.post('/mailing',(req,res)=>{
                 console.log(error)
                 return res.send({error:true,status:0,msg:'fail'})
             } else {
+                dbCon.query('INSERT INTO tb_sendmail(admin_id,sendmail_email, sendmail_subject, sendmail_text) VALUES(?,?,?,?)',[admin_id,emailto,subject,text],(error,results,fields)=>{
+                    try {
+                        if(error) throw error;
+                    } catch (error) {
+                        
+                    }
+                })
                 // console.log('Email sent:'+info.response)
                 return res.send({error:false,data:info.response,status:1,msg:'succesfull'})
             }
@@ -566,6 +573,27 @@ app.post("/giver_register", upload.single('image'),(req,res)=>{
 })
 app.get('/giver_data',(req,res)=>{
     dbCon.query('SELECT g.*,v.name_lao AS village,d.name_lao AS district, p.name_lao AS province  from tb_dog_giver g INNER JOIN tb_village v ON g.giver_village = v.id_village INNER JOIN tb_district d ON g.giver_district = d.id_district INNER JOIN tb_province p ON g.giver_province = p.id_province',(error, results,fields)=>{
+        try {
+            if(error) throw error;
+        let message = ""
+		let status 
+		if(results === undefined || results.length == 0){
+			message ="Book table is empty"
+			status=0
+		}else {
+			message ="Succesfully retrieved all books"
+			status=1
+		}
+		return res.send({ error : false , data: results, message:message, status:status });
+        } catch (error) {
+            
+        }
+    })
+
+});
+
+app.get('/admin_data',(req,res)=>{
+    dbCon.query('SELECT a.*,v.name_lao AS village,d.name_lao AS district, p.name_lao AS province  from tb_admin a INNER JOIN tb_village v ON a.admin_village = v.id_village INNER JOIN tb_district d ON a.admin_district = d.id_district INNER JOIN tb_province p ON a.admin_province = p.id_province',(error, results,fields)=>{
         try {
             if(error) throw error;
         let message = ""
@@ -1327,7 +1355,7 @@ app.get('/report_giver',(req,res)=>{
 app.post('/update_giver', upload.single('image'),(req,res)=>{
     const{admin_id,giver_name,giver_surname,giver_gender,giver_email,giver_dob,giver_village,giver_district,giver_province,giver_workplace,giver_phoneNumber,giver_id}=req.body
 
-
+console.log(req.body)
     if (!admin_id||!giver_name||!giver_surname||!giver_gender||!giver_email||!giver_dob||!giver_village||!giver_district||!giver_province||!giver_workplace||!giver_phoneNumber||!giver_id) {
         return res.send({error:true,status: 0,message:'somefill empty' })
     } else {
@@ -1339,7 +1367,7 @@ app.post('/update_giver', upload.single('image'),(req,res)=>{
     
                 try {
                     if(error) throw error;
-                    return res.send({error:false,data:results,message:"success",status: 1})
+                    return res.send({error:false,data:results,message:"success there",status: 1})
                 } catch (error) {
                     
                 }
@@ -1350,7 +1378,44 @@ app.post('/update_giver', upload.single('image'),(req,res)=>{
     
                 try {
                     if(error) throw error;
-                    return res.send({error:false,data:results,message:"success",status: 1})
+                    return res.send({error:false,data:results,message:"success no img",status: 1})
+                } catch (error) {
+                    
+                }
+            })
+        }else{
+            return res.send({error:true,data:results,message:"something wrong",status: 0})
+        }
+    }
+})
+
+app.post('/update_admin', upload.single('image'),(req,res)=>{
+    const{admin_id,admin_name,admin_surname,admin_gender,admin_email,admin_dob,admin_village,admin_district,admin_province,admin_workplace,admin_phoneNumber}=req.body
+
+console.log(!admin_id)
+    if (!admin_id||!admin_name||!admin_surname||!admin_gender||!admin_email||!admin_dob||!admin_village||!admin_district||!admin_province||!admin_workplace||!admin_phoneNumber) {
+        return res.send({error:true,status: 0,message:'somefill emptywawa' })
+    } else {
+        if (req.file != null) {
+            console.log('there img')
+            let admin_img = req.file.filename
+            
+            dbCon.query('UPDATE tb_admin SET admin_name=?,admin_surname=?,admin_gender=?,admin_email=?,admin_dob=?,admin_village=?,admin_district=?,admin_province=?,admin_workplace=?,admin_phoneNumber=?,admin_img=? WHERE admin_id =?',[admin_name,admin_surname,admin_gender,admin_email,admin_dob,admin_village,admin_district,admin_province,admin_workplace,admin_phoneNumber,"http://localhost:3000/present/"+admin_img,admin_id],(error,results,fields)=>{
+    
+                try {
+                    if(error) throw error;
+                    return res.send({error:false,data:results,message:"success there",status: 1})
+                } catch (error) {
+                    
+                }
+            })
+        } else if(req.file == null) {
+            console.log('no image')
+            dbCon.query('UPDATE tb_admin SET admin_name=?,admin_surname=?,admin_gender=?,admin_email=?,admin_dob=?,admin_village=?,admin_district=?,admin_province=?,admin_workplace=?,admin_phoneNumber=? WHERE admin_id =?',[admin_name,admin_surname,admin_gender,admin_email,admin_dob,admin_village,admin_district,admin_province,admin_workplace,admin_phoneNumber,admin_id],(error,results,fields)=>{
+    
+                try {
+                    if(error) throw error;
+                    return res.send({error:false,data:results,message:"success no img",status: 1})
                 } catch (error) {
                     
                 }
