@@ -1329,10 +1329,10 @@ app.post('/update_giver', upload.single('image'),(req,res)=>{
 
 
     if (!admin_id||!giver_name||!giver_surname||!giver_gender||!giver_email||!giver_dob||!giver_village||!giver_district||!giver_province||!giver_workplace||!giver_phoneNumber||!giver_id) {
-        return res.send({status: 2,message:'somefill empty' })
+        return res.send({error:true,status: 0,message:'somefill empty' })
     } else {
         if (req.file != null) {
-            console.log('there img')
+            // console.log('there img')
             let giver_img = req.file.filename
             
             dbCon.query('UPDATE tb_dog_giver SET admin_id = ?,giver_name=?,giver_surname=?,giver_gender=?,giver_email=?,giver_dob=?,giver_village=?,giver_district=?,giver_province=?,giver_workplace=?,giver_phoneNumber=?,giver_img=? WHERE giver_id =?',[admin_id,giver_name,giver_surname,giver_gender,giver_email,giver_dob,giver_village,giver_district,giver_province,giver_workplace,giver_phoneNumber,"http://localhost:3000/present/"+giver_img,giver_id],(error,results,fields)=>{
@@ -1345,7 +1345,7 @@ app.post('/update_giver', upload.single('image'),(req,res)=>{
                 }
             })
         } else if(req.file == null) {
-            console.log('no image')
+            // console.log('no image')
             dbCon.query('UPDATE tb_dog_giver SET admin_id = ?,giver_name=?,giver_surname=?,giver_gender=?,giver_email=?,giver_dob=?,giver_village=?,giver_district=?,giver_province=?,giver_workplace=?,giver_phoneNumber=? WHERE giver_id =?',[admin_id,giver_name,giver_surname,giver_gender,giver_email,giver_dob,giver_village,giver_district,giver_province,giver_workplace,giver_phoneNumber,giver_id],(error,results,fields)=>{
     
                 try {
@@ -1355,6 +1355,8 @@ app.post('/update_giver', upload.single('image'),(req,res)=>{
                     
                 }
             })
+        }else{
+            return res.send({error:true,data:results,message:"something wrong",status: 0})
         }
     }
 })
