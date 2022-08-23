@@ -90,8 +90,8 @@ app.post('/mailing',(req,res)=>{
     const mailOption = {
         from: 'takeme.home.lao@gmail.com',
         to:emailto,
-        subject:subject,
-        text:text
+        subject:'Topic:'+subject,
+        text:'ເນື່ອໃນ:'+text
     }
     transporter.sendMail(mailOption,function(error,info){
         try {
@@ -318,7 +318,7 @@ app.post('/donateCash',(req,res)=>{
         from: 'takeme.home.lao@gmail.com',
         to:email,
         subject:'Thank you For Donate',
-        text:'Amound'+donate_cash_price
+        text:'Amound:'+donate_cash_price+'Kips'
     }
     console.log(req.body)
     if (!admin_id|| !name|| !surname|| !email|| !dob || !donate_cash_price|| !donate_cash_for) {
@@ -1295,7 +1295,7 @@ app.get('/report_form',(req,res)=>{
     
 })
 app.get('/report_donate',(req,res)=>{
-    dbCon.query('SELECT tb_donate.*,tb_users.user_name FROM tb_donate INNER JOIN tb_users ON tb_donate.user_id=tb_users.user_id ORDER BY donate_create_at DESC',(error,results,fields)=>{
+    dbCon.query('SELECT tb_donate.*,tb_users.user_name,tb_users.user_email FROM tb_donate INNER JOIN tb_users ON tb_donate.user_id=tb_users.user_id ORDER BY donate_create_at DESC',(error,results,fields)=>{
         try {
             if(error) throw error;
             let message=""
@@ -1352,6 +1352,47 @@ app.get('/report_giver',(req,res)=>{
         }
     })
 })
+
+app.get('/dog_count',(req,res)=>{
+    dbCon.query('SELECT COUNT(dog_id) as num FROM tb_dogs WHERE dog_status != 3',(error,results,fields)=>{
+        try {
+            if(error) throw error;
+            let message=""
+            let status
+            if(results === undefined || results.length == 0){
+                message ="Book table is empty"
+                status=0
+            }else {
+                message ="Succesfully retrieved all books"
+                status=1
+            }
+            return res.send({ error : false , data: results, message:message, status:status });
+        } catch (error) {
+            
+        }
+    })
+})
+
+app.get('/adopt_count',(req,res)=>{
+    dbCon.query('SELECT COUNT(dog_id) as num FROM tb_dogs WHERE dog_status = 2',(error,results,fields)=>{
+        try {
+            if(error) throw error;
+            let message=""
+            let status
+            if(results === undefined || results.length == 0){
+                message ="Book table is empty"
+                status=0
+            }else {
+                message ="Succesfully retrieved all books"
+                status=1
+            }
+            return res.send({ error : false , data: results, message:message, status:status });
+        } catch (error) {
+            
+        }
+    })
+})
+
 app.post('/update_giver', upload.single('image'),(req,res)=>{
     const{admin_id,giver_name,giver_surname,giver_gender,giver_email,giver_dob,giver_village,giver_district,giver_province,giver_workplace,giver_phoneNumber,giver_id}=req.body
 
