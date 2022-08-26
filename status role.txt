@@ -1,0 +1,3 @@
+tb_dogs	status	0 = normal, 1= pending adopt, 2 = Success Adopting, 3 = delete data
+tb_form	status	0 = normal, 1= Accept              , 2 = Decline                    , 3 = Purchase
+tb_event	status	0=off	, 1= adopt event     , 2 = special Event

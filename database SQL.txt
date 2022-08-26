@@ -1,0 +1,107 @@
+dog
+	CREATE TABLE tb_dogs(
+	dog_id int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    	dog_name varchar(100) NOT NULL,
+    	dog date,
+    	dog_gender varchar(100) NOT NULL,
+    	dog_specy varchar(100) NOT NULL,
+    	dog_img varchar(1000) NOT NULL,
+    	dog_create_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    	dog_update_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+	) ENGINE=INNODB DEFAULT charset=utf8;
+user
+	CREATE TABLE tb_users(
+	user_id int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    	user_name varchar(100) NOT NULL,
+    	user_surname varchar(100) NOT NULL,
+    	user_gender int(3) NOT NULL,
+    	user_img varchar(1000) NOT NULL,
+    	user_email varchar(100) NOT NULL,
+    	user_dob DATE NOT NULL,
+	user_village varchar(100) NOT NULL,
+	user_district varchar(100) NOT NULL,
+	user_province varchar(100) NOT NULL,
+	user_workplace varchar(100) NOT NULL,
+	user_phoneNumber varchar(100) NOT NULL,
+    	user_create_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    	user_update_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+	) ENGINE=INNODB DEFAULT charset=utf8
+donate
+	CREATE TABLE tb_donate (
+    	donate_id int(11) NOT NULL AUTO_INCREMENT,
+    	user_id int(11) NOT NULL,
+   	 donate_bill varchar(100) NOT NULL,
+    	donate_price int NOT NULL,
+    	donate_for int NOT NULL,
+    	donate_create_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    	donate_update_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    	PRIMARY KEY (donate_id),
+    	FOREIGN KEY (user_id) REFERENCES tb_users(user_id) 
+	)ENGINE=INNODB DEFAULT charset=utf8;
+form_adopt
+	form_id	PK
+	user_id	FK
+	dog_id	FK
+	q_1	Do you own or rent your current home?*	radio button
+	q_2	If you RENT your home, are pets allowed?@radio button
+	q_3	Is there a weight limit?@		radio button
+	q_4	What is the weight limit?@		text
+	q_5	Is a pet deposit required?@		radio btn
+	q_6	What is the deposit amount?@		text
+
+	q_7	Do you travel frequently?*		radio btn
+	q_8	when you are always, who will care for the dog?*	textarea		
+	q_9	how many hours per day will the dog be alone?*	text
+	q_10	Where will the dog be kept during the day?*		text
+	q_11	how long do you plan to keep this dog?*		text
+	q_12	if you lost your job or had to move, or if the dog grows largers than expected,
+	what would you do with the dog?	*			textarea
+
+	q_13	where will this dog be kept during bad weather?*	text
+	q_14	how do you plan to house train the dog?	*	text
+	q_15	if this dog develops behavioral problems such as chewing, digging, etc, what 	masures will you take?*				textarea
+	q_16	will you train this dog? if so, How? *		textarea
+	q_17	Why do you want to adopt a companion animal? *	textarea
+	q_18	Do you have a securely fenced yard? *		radio
+	q_19	how hight fence? *				textarea
+	q_create_at
+	q_update_at
+
+	CREATE TABLE tb_form_adopt (
+    	form_id int(11) NOT NULL AUTO_INCREMENT,
+    	user_id int(11) NOT NULL,
+   	 	dog_id int(11) NOT NULL,
+    	q_1 int NOT NULL,
+        q_2 int NOT NULL,
+    	q_3 int NOT NULL,
+    	q_4 longtext NOT NULL,
+    	q_5 int NOT NULL,
+    	q_6 longtext NOT NULL,
+    	q_7 int NOT NULL,
+    	q_8 longtext NOT NULL,
+    	q_9 longtext NOT NULL,
+    	q_10 longtext NOT NULL,
+    	q_11 longtext NOT NULL,
+    	q_12 longtext NOT NULL,
+    	q_13 longtext NOT NULL,
+    	q_14 longtext NOT NULL,
+    	q_15 longtext NOT NULL,
+    	q_16 longtext NOT NULL,
+    	q_17 longtext NOT NULL,
+    	q_18 int NOT NULL,
+    	q_19 longtext NOT NULL,
+    	form_create_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    	form_update_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    	PRIMARY KEY (form_id),
+    	FOREIGN KEY (user_id) REFERENCES tb_users(user_id),
+    	FOREIGN KEY (dog_id) REFERENCES tb_dogs(dog_id) 
+	)ENGINE=INNODB DEFAULT charset=utf8
+		
+
+
+https://www.google.com/recaptcha/admin/site/509579798/setup
+
+
+SELECT f.form_id,f.user_id,f.dog_id, d.dog_name
+FROM tb_form_adopt as f
+INNER JOIN tb_dogs as d ON f.dog_id=d.dog_id WHERE f.user_id = 3 AND f.dog_id=2
